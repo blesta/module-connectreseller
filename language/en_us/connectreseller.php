@@ -15,6 +15,7 @@ $lang['Connectreseller.add_module_row'] = 'Add Account';
 $lang['Connectreseller.add_module_group'] = 'Add Account Group';
 $lang['Connectreseller.manage.module_rows_title'] = 'Accounts';
 
+$lang['Connectreseller.manage.module_rows_heading.reseller_name'] = 'Reseller Name';
 $lang['Connectreseller.manage.module_rows_heading.api_key'] = 'API Key';
 $lang['Connectreseller.manage.module_rows_heading.options'] = 'Options';
 $lang['Connectreseller.manage.module_rows.edit'] = 'Edit';
@@ -33,6 +34,9 @@ $lang['Connectreseller.manage.module_groups.delete'] = 'Delete';
 $lang['Connectreseller.manage.module_groups.confirm_delete'] = 'Are you sure you want to delete this Account';
 
 $lang['Connectreseller.manage.module_groups.no_results'] = 'There is no Account Group';
+
+$lang['Connectreseller.order_options.first'] = 'First Non-full Server';
+$lang['Connectreseller.order_options.roundrobin'] = 'Evenly Distribute Among Servers';
 
 
 // Add row

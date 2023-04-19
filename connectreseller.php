@@ -919,6 +919,24 @@ class Connectreseller extends RegistrarModule
     }
 
     /**
+     * Returns an array of available service deligation order methods. The module
+     * will determine how each method is defined. For example, the method "first"
+     * may be implemented such that it returns the module row with the least number
+     * of services assigned to it.
+     *
+     * @return array An array of order methods in key/value paris where the key is
+     *  the type to be stored for the group and value is the name for that option
+     * @see Module::selectModuleRow()
+     */
+    public function getGroupOrderOptions()
+    {
+        return [
+            'roundrobin' => Language::_('Connectreseller.order_options.roundrobin', true),
+            'first' => Language::_('Connectreseller.order_options.first', true)
+        ];
+    }
+
+    /**
      * Returns all tabs to display to a client when managing a service.
      *
      * @param stdClass $service A stdClass object representing the service
@@ -2288,12 +2306,12 @@ class Connectreseller extends RegistrarModule
                         continue;
                     }
 
-                    if (!isset($response[$tld][$currency->code])) {
-                        $response[$tld][$currency->code] = [];
+                    if (!isset($pricing[$tld][$currency->code])) {
+                        $pricing[$tld][$currency->code] = [];
                     }
 
-                    if (!isset($response[$tld][$currency->code][$i])) {
-                        $response[$tld][$currency->code][$i] = [
+                    if (!isset($pricing[$tld][$currency->code][$i])) {
+                        $pricing[$tld][$currency->code][$i] = [
                             'register' => $this->Currencies->convert(
                                 ($tld_price->registrationPrice ?? 0) * $i,
                                 $tld_price->currencyCode ?? 'USD',
