@@ -1023,13 +1023,8 @@ class Connectreseller extends RegistrarModule
      * @param array $files Any FILES parameters
      * @return string The string representing the contents of this tab
      */
-    public function tabWhois(
-        $package,
-        $service,
-        array $get = null,
-        array $post = null,
-        array $files = null
-    ) {
+    public function tabWhois($package, $service, array $get = null, array $post = null, array $files = null)
+    {
         return $this->manageWhois('tab_whois', $package, $service, $get, $post, $files);
     }
 
@@ -1043,13 +1038,8 @@ class Connectreseller extends RegistrarModule
      * @param array $files Any FILES parameters
      * @return string The string representing the contents of this tab
      */
-    public function tabClientWhois(
-        $package,
-        $service,
-        array $get = null,
-        array $post = null,
-        array $files = null
-    ) {
+    public function tabClientWhois($package, $service, array $get = null, array $post = null, array $files = null)
+    {
         return $this->manageWhois('tab_client_whois', $package, $service, $get, $post, $files);
     }
 
@@ -1173,13 +1163,8 @@ class Connectreseller extends RegistrarModule
      * @param array $files Any FILES parameters
      * @return string The string representing the contents of this tab
      */
-    public function tabNameservers(
-        $package,
-        $service,
-        array $get = null,
-        array $post = null,
-        array $files = null
-    ) {
+    public function tabNameservers($package, $service, array $get = null, array $post = null, array $files = null)
+    {
         return $this->manageNameservers('tab_nameservers', $package, $service, $get, $post, $files);
     }
 
@@ -1193,13 +1178,8 @@ class Connectreseller extends RegistrarModule
      * @param array $files Any FILES parameters
      * @return string The string representing the contents of this tab
      */
-    public function tabClientNameservers(
-        $package,
-        $service,
-        array $get = null,
-        array $post = null,
-        array $files = null
-    ) {
+    public function tabClientNameservers($package, $service, array $get = null, array $post = null, array $files = null)
+    {
         return $this->manageNameservers('tab_client_nameservers', $package, $service, $get, $post, $files);
     }
 
@@ -1398,13 +1378,8 @@ class Connectreseller extends RegistrarModule
      * @param array $files Any FILES parameters
      * @return string The string representing the contents of this tab
      */
-    public function tabUrlForwarding(
-        $package,
-        $service,
-        array $get = null,
-        array $post = null,
-        array $files = null
-    ) {
+    public function tabUrlForwarding($package, $service, array $get = null, array $post = null, array $files = null)
+    {
         return $this->manageUrlForwarding('tab_urlforwarding', $package, $service, $get, $post, $files);
     }
 
@@ -1517,13 +1492,8 @@ class Connectreseller extends RegistrarModule
      * @param array $files Any FILES parameters
      * @return string The string representing the contents of this tab
      */
-    public function tabSettings(
-        $package,
-        $service,
-        array $get = null,
-        array $post = null,
-        array $files = null
-    ) {
+    public function tabSettings($package, $service, array $get = null, array $post = null, array $files = null)
+    {
         return $this->manageSettings('tab_settings', $package, $service, $get, $post, $files);
     }
 
@@ -1537,13 +1507,8 @@ class Connectreseller extends RegistrarModule
      * @param array $files Any FILES parameters
      * @return string The string representing the contents of this tab
      */
-    public function tabClientSettings(
-        $package,
-        $service,
-        array $get = null,
-        array $post = null,
-        array $files = null
-    ) {
+    public function tabClientSettings($package, $service, array $get = null, array $post = null, array $files = null)
+    {
         return $this->manageSettings('tab_client_settings', $package, $service, $get, $post, $files);
     }
 
