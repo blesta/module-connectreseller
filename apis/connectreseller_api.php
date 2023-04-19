@@ -95,7 +95,7 @@ class ConnectresellerApi
         }
 
         // Save last request
-        $this->last_request = ['url' => $url, 'params' => array_merge($params, ['APIKey' => '***'])];
+        $this->last_request = ['url' => $route, 'params' => array_merge($params, ['APIKey' => '***'])];
         $result = curl_exec($curl);
 
         if (curl_errno($curl)) {

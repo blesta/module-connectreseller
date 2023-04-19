@@ -89,6 +89,7 @@ $lang['Connectreseller.tab_client_whois.field_submit'] = 'Update';
 
 
 // Name Servers client tab
+$lang['Connectreseller.tab_client_nameservers.title_list'] = 'Nameservers';
 $lang['Connectreseller.tab_client_nameservers'] = 'Name Servers';
 $lang['Connectreseller.tab_client_nameservers.field_submit'] = 'Update';
 
@@ -118,15 +119,15 @@ $lang['Connectreseller.tab_client_dns.record_type.txt_record'] = 'TXT Record';
 
 // URL Forwarding client tab
 $lang['Connectreseller.tab_client_urlforwarding'] = 'URL Forwarding';
-$lang['Connectreseller.tab_client_urlforwarding.heading_current_rules'] = 'Current Rules';
-$lang['Connectreseller.tab_client_urlforwarding.heading_add_rule'] = 'Add Rule';
+$lang['Connectreseller.tab_client_urlforwarding.heading_current_rules'] = 'Current Rule';
+$lang['Connectreseller.tab_client_urlforwarding.heading_add_rule'] = 'Update Rule';
 $lang['Connectreseller.tab_client_urlforwarding.heading_source'] = 'Source';
 $lang['Connectreseller.tab_client_urlforwarding.heading_destination'] = 'Destination';
 $lang['Connectreseller.tab_client_urlforwarding.heading_options'] = 'Options';
 $lang['Connectreseller.tab_client_urlforwarding.option_delete'] = 'Delete';
-$lang['Connectreseller.tab_client_urlforwarding.text_no_forwarding_rules'] = 'There are no URL forwarding rules for this domain.';
+$lang['Connectreseller.tab_client_urlforwarding.text_no_forwarding_rules'] = 'There is no URL forwarding rule for this domain.';
 $lang['Connectreseller.tab_client_urlforwarding.field_destination'] = 'Destination';
-$lang['Connectreseller.tab_client_urlforwarding.field_submit'] = 'Add Rule';
+$lang['Connectreseller.tab_client_urlforwarding.field_submit'] = 'Update Rule';
 
 
 // Settings client tab
@@ -154,6 +155,7 @@ $lang['Connectreseller.tab_whois.field_submit'] = 'Update';
 
 
 // Name Servers tab
+$lang['Connectreseller.tab_nameservers.title_list'] = 'Nameservers';
 $lang['Connectreseller.tab_nameservers'] = 'Name Servers';
 $lang['Connectreseller.tab_nameservers.field_submit'] = 'Update';
 
@@ -183,15 +185,15 @@ $lang['Connectreseller.tab_dns.record_type.txt_record'] = 'TXT Record';
 
 // URL Forwarding tab
 $lang['Connectreseller.tab_urlforwarding'] = 'URL Forwarding';
-$lang['Connectreseller.tab_urlforwarding.heading_current_rules'] = 'Current Rules';
-$lang['Connectreseller.tab_urlforwarding.heading_add_rule'] = 'Add Rule';
+$lang['Connectreseller.tab_urlforwarding.heading_current_rules'] = 'Current Rule';
+$lang['Connectreseller.tab_urlforwarding.heading_add_rule'] = 'Update Rule';
 $lang['Connectreseller.tab_urlforwarding.heading_source'] = 'Source';
 $lang['Connectreseller.tab_urlforwarding.heading_destination'] = 'Destination';
 $lang['Connectreseller.tab_urlforwarding.heading_options'] = 'Options';
 $lang['Connectreseller.tab_urlforwarding.option_delete'] = 'Delete';
-$lang['Connectreseller.tab_urlforwarding.text_no_forwarding_rules'] = 'There are no URL forwarding rules for this domain.';
+$lang['Connectreseller.tab_urlforwarding.text_no_forwarding_rules'] = 'There is no URL forwarding rule for this domain.';
 $lang['Connectreseller.tab_urlforwarding.field_destination'] = 'Destination';
-$lang['Connectreseller.tab_urlforwarding.field_submit'] = 'Add Rule';
+$lang['Connectreseller.tab_urlforwarding.field_submit'] = 'Update Rule';
 
 
 // Settings tab
