@@ -1067,43 +1067,7 @@ class Connectreseller extends RegistrarModule
 
         // Fetch domain contacts
         try {
-            $contacts = $this->getDomainContacts($service_fields->domain, $service->module_row_id);
-
-            $vars = (object) [];
-            foreach ($contacts as $contact) {
-                if (!is_array($contact)) {
-                    continue;
-                }
-
-                // Set contact type
-                $type = $contact['external_id'] ?? '';
-                unset($contact['external_id']);
-
-                if (!isset($vars->$type)) {
-                    $vars->$type = [];
-                }
-
-                // Format contact
-                $fields_map = [
-                    'email' => 'EmailAddress',
-                    'phone' => 'PhoneNo',
-                    'first_name' => 'Name',
-                    'address1' => 'Address',
-                    'city' => 'City',
-                    'state' => 'StateName',
-                    'zip' => 'Zip',
-                    'country' => 'CountryName'
-                ];
-                foreach ($contact as $field => $value) {
-                    if (isset($fields_map[$field])) {
-                        $vars->$type[$fields_map[$field]] = $value;
-                    }
-                }
-
-                if (isset($vars->$type['Name'])) {
-                    $vars->$type['Name'] = trim($vars->$type['Name'] . ' ' . $contact['last_name']);
-                }
-            }
+            $vars = $this->getDomainContacts($service_fields->domain, $service->module_row_id);
         } catch (Throwable $e) {
             $this->Input->setErrors(['errors' => ['contacts' => $e->getMessage()]]);
         }
@@ -1116,27 +1080,7 @@ class Connectreseller extends RegistrarModule
 
         // Update whois contacts
         if (!empty($post)) {
-            $params = [];
-            $remote_fields_map = array_flip($fields_map);
-            foreach ($post as $type => $contact) {
-                $formatted_contact = [
-                    'external_id' => $type
-                ];
-                foreach ($contact as $contact_field => $contact_value) {
-                    if (isset($remote_fields_map[$contact_field])) {
-                        $formatted_contact[$remote_fields_map[$contact_field]] = $contact_value;
-                    }
-                }
-
-                if (isset($formatted_contact['first_name'])) {
-                    $name_parts = explode(' ', $formatted_contact['first_name'], 2);
-                    $formatted_contact['first_name'] = $name_parts[0] ?? null;
-                    $formatted_contact['last_name'] = $name_parts[1] ?? null;
-                }
-
-                $params[] = $formatted_contact;
-            }
-            $this->setDomainContacts($service_fields->domain, $params, $service->module_row_id);
+            $this->setDomainContacts($service_fields->domain, $post, $service->module_row_id);
 
             $vars = (object) $post;
         }
@@ -2391,31 +2335,26 @@ class Connectreseller extends RegistrarModule
             'technical' => str_replace('OR_', '', $data->responseData->technicalContactId ?? null),
             'billing' => str_replace('OR_', '', $data->responseData->billingContactId ?? null)
         ];
+        $contact_fields = [
+            'EmailAddress', 'PhoneNo', 'Name', 'Address1', 'City', 'StateName', 'ZipCode', 'CountryName'
+        ];
 
-        $contacts = [];
+        $vars = (object) [];
         foreach ($contact_ids as $type => $id) {
             $contact = $command->ViewRegistrant(['RegistrantContactId' => $id]);
             $response = $contact->response();
 
             $this->processResponse($api, $contact);
 
-            $name_parts = explode(' ', $response->responseData->name ?? null, 2);
-            $contacts[] = [
-                'external_id' => $type,
-                'email' => $response->responseData->emailAddress ?? null,
-                'phone' => '+' .($response->responseData->phoneCode ?? null) . '.'
-                    . ($response->responseData->phoneNo ?? null),
-                'first_name' => $name_parts[0] ?? null,
-                'last_name' => $name_parts[1] ?? null,
-                'address1' => $response->responseData->address1 ?? null,
-                'city' => $response->responseData->city ?? null,
-                'state' => $response->responseData->stateName ?? null,
-                'zip' => $response->responseData->zipCode ?? null,
-                'country' => $response->responseData->countryName ?? null
-            ];
+            $vars->{$type} = [];
+            $response_data = (array)$response->responseData;
+            foreach ($contact_fields as $contact_field) {
+                $vars->{$type}[$contact_field] = $response_data[lcfirst($contact_field)];
+            }
+            $vars->{$type}['PhoneNo'] = '+' . $response_data['phoneCode'] . '.' . $vars->{$type}['PhoneNo'];
         }
 
-        return $contacts;
+        return $vars;
     }
 
     /**
@@ -2596,21 +2535,18 @@ class Connectreseller extends RegistrarModule
 
         // Create new contacts, if they have not been created during provisioning
         foreach ($contacts as $id => $remote_contact) {
-            if (str_replace('OR_', '', $data->responseData->registrantContactId ?? null) == $remote_contact && $id !== 'registrantContactId') {
-                $contact = $vars[0] ?? [];
-                $params = [
-                    'Name' => trim($contact['first_name'] . ' ' . $contact['last_name']),
-                    'EmailAddress' => $contact['email'] ?? null,
-                    'CompanyName' => $contact['company_name'] ?? 'NA',
-                    'Address' => $contact['address1'] ?? null,
-                    'City' => $contact['city'] ?? null,
-                    'StateName' => $contact['state'] ?? null,
-                    'CountryName' => $contact['country'] ?? null,
-                    'Zip' => $contact['zip'] ?? null,
-                    'PhoneNo_cc' => '1',
-                    'PhoneNo' => '1111111',
-                    'Id' => $data->responseData->customerId ?? null
-                ];
+            if (str_replace('OR_', '', $data->responseData->registrantContactId ?? null) == $remote_contact
+                && $id !== 'registrantContactId'
+            ) {
+                $params = $vars['registrant'] ?? [];
+                $params['Id'] = $data->responseData->customerId ?? null;
+                $params['CompanyName'] = $params['CompanyName'] ?? 'NA';
+                $params['Zip'] = $params['ZipCode'];
+                $phone_parts = explode('.', $params['PhoneNo']);
+                $params['PhoneNo'] = count($phone_parts) > 1 ? $phone_parts[1] : $phone_parts[0];
+                $params['PhoneNo_cc'] = count($phone_parts) > 1 ? $phone_parts[0] : '1';
+                $params['Address'] = $params['Address1'];
+                unset($params['ZipCode'], $params['Address1']);
 
                 $response = $command->AddRegistrantContact($params);
                 $this->processResponse($api, $response);
@@ -2629,37 +2565,30 @@ class Connectreseller extends RegistrarModule
         ], $contacts));
 
         // Update contacts
-        foreach ($vars as $contact) {
+        foreach ($vars as $type => $contact) {
             // Get phone extension
-            $phone_extension = '1';
-            if (str_contains($contact['phone'], '.')) {
-                $phone_parts = explode('.', $contact['phone'], 2);
-                $phone_extension = ltrim($phone_parts[0] ?? '1', '+');
+            $phone_country_code = '1';
+            if (str_contains($contact['PhoneNo'], '.')) {
+                $phone_parts = explode('.', $contact['PhoneNo'], 2);
+                $phone_country_code = ltrim($phone_parts[0] ?? '1', '+');
             }
 
             // Get phone number
-            $phone_number = '1111111';
-            if (str_contains($contact['phone'], '.')) {
-                $phone_parts = explode('.', $contact['phone'], 2);
+            $phone_number = $contact['PhoneNo'];
+            if (str_contains($contact['PhoneNo'], '.')) {
+                $phone_parts = explode('.', $contact['PhoneNo'], 2);
                 $phone_number = $phone_parts[1] ?? '1111111';
             }
 
-            $params = [
-                'Id' => $contacts[$contact['external_id'] . 'ContactId'] ?? null,
-                'Name' => trim($contact['first_name'] . ' ' . $contact['last_name']),
-                'EmailAddress' => $contact['email'] ?? null,
-                'CompanyName' => $contact['company_name'] ?? 'NA',
-                'Address1' => $contact['address1'] ?? null,
-                'City' => $contact['city'] ?? null,
-                'StateName' => $contact['state'] ?? null,
-                'CountryName' => $contact['country'] ?? null,
-                'Zip' => $contact['zip'] ?? null,
-                'PhoneNo_cc' => $phone_extension,
-                'PhoneNo' => $phone_number,
-                'domainId' => $this->getDomainId($domain, $module_row_id)
-            ];
+            $contact['CompanyName'] = $contact['CompanyName'] ?? 'NA';
+            $contact['Zip'] = $contact['ZipCode'];
+            $contact['Address'] = $contact['Address1'];
+            unset($contact['ZipCode'], $contact['Address1']);
+            $contact['RegistrantContactId'] = (int)$contacts[$type . 'ContactId'] ?? null;
+            $contact['PhoneNo_cc'] = $phone_country_code;
+            $contact['PhoneNo'] = $phone_number;
 
-            $response = $command->ModifyRegistrantContact_whmcs($params);
+            $response = $command->ModifyRegistrantContact($contact);
             $this->processResponse($api, $response);
         }
 
@@ -2887,7 +2816,7 @@ class Connectreseller extends RegistrarModule
         }
 
         $last_request = $api->lastRequest();
-        $this->log($last_request['url'], serialize($last_request['args'] ?? []), 'input', true);
+        $this->log($last_request['url'], json_encode($last_request['params'] ?? []), 'input', true);
         $this->log($last_request['url'], $response->raw(), 'output', $response->status() == 200);
     }
 
