@@ -547,7 +547,7 @@ Configure::set('Connectreseller.whois_fields', [
         'label' => Language::_('Connectreseller.whois.EmailAddress', true),
         'type' => 'text'
     ],
-    'Address' => [
+    'Address1' => [
         'label' => Language::_('Connectreseller.whois.Address', true),
         'type' => 'text'
     ],
@@ -563,7 +563,7 @@ Configure::set('Connectreseller.whois_fields', [
         'label' => Language::_('Connectreseller.whois.CountryName', true),
         'type' => 'text'
     ],
-    'Zip' => [
+    'ZipCode' => [
         'label' => Language::_('Connectreseller.whois.Zip', true),
         'type' => 'text'
     ],
