@@ -832,6 +832,11 @@ class Connectreseller extends RegistrarModule
             }
         }
 
+        // If an auth code is provided, we can assume is a transfer
+        if (isset($vars['transfer']) || isset($vars['Authcode'])) {
+            unset($rules['ns']);
+        }
+
         return $rules;
     }
 
