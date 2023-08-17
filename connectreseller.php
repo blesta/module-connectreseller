@@ -832,6 +832,11 @@ class Connectreseller extends RegistrarModule
             }
         }
 
+        // If an auth code is provided, we can assume is a transfer
+        if (isset($vars['transfer']) || isset($vars['Authcode'])) {
+            unset($rules['ns']);
+        }
+
         return $rules;
     }
 
@@ -916,6 +921,24 @@ class Connectreseller extends RegistrarModule
         }
 
         return $this->Contacts->intlNumber($number, $country, '.');
+    }
+
+    /**
+     * Returns an array of available service deligation order methods. The module
+     * will determine how each method is defined. For example, the method "first"
+     * may be implemented such that it returns the module row with the least number
+     * of services assigned to it.
+     *
+     * @return array An array of order methods in key/value paris where the key is
+     *  the type to be stored for the group and value is the name for that option
+     * @see Module::selectModuleRow()
+     */
+    public function getGroupOrderOptions()
+    {
+        return [
+            'roundrobin' => Language::_('Connectreseller.order_options.roundrobin', true),
+            'first' => Language::_('Connectreseller.order_options.first', true)
+        ];
     }
 
     /**
@@ -1005,108 +1028,9 @@ class Connectreseller extends RegistrarModule
      * @param array $files Any FILES parameters
      * @return string The string representing the contents of this tab
      */
-    public function tabWhois(
-        $package,
-        $service,
-        array $get = null,
-        array $post = null,
-        array $files = null
-    ) {
-        $this->view = new View('tab_whois', 'default');
-        $this->view->base_uri = $this->base_uri;
-
-        // Load the helpers required for this view
-        Loader::loadHelpers($this, ['Form', 'Html']);
-
-        // Get service fields
-        $service_fields = $this->serviceFieldsToObject($service->fields);
-
-        // Fetch domain contacts
-        try {
-            $contacts = $this->getDomainContacts($service_fields->domain, $service->module_row_id);
-
-            $vars = (object) [];
-            foreach ($contacts as $contact) {
-                if (!is_array($contact)) {
-                    continue;
-                }
-
-                // Set contact type
-                $type = $contact['external_id'] ?? '';
-                unset($contact['external_id']);
-
-                if (!isset($vars->$type)) {
-                    $vars->$type = [];
-                }
-
-                // Format contact
-                $fields_map = [
-                    'email' => 'EmailAddress',
-                    'phone' => 'PhoneNo',
-                    'first_name' => 'Name',
-                    'address1' => 'Address',
-                    'city' => 'City',
-                    'state' => 'StateName',
-                    'zip' => 'Zip',
-                    'country' => 'CountryName'
-                ];
-                foreach ($contact as $field => $value) {
-                    if (isset($fields_map[$field])) {
-                        $vars->$type[$fields_map[$field]] = $value;
-                    }
-                }
-
-                if (isset($vars->$type['Name'])) {
-                    $vars->$type['Name'] = trim($vars->$type['Name'] . ' ' . $contact['last_name']);
-                }
-            }
-        } catch (Throwable $e) {
-            $this->Input->setErrors(['errors' => ['contacts' => $e->getMessage()]]);
-        }
-
-        // Set tab sections
-        $sections = [
-            'registrant', 'admin',
-            'technical', 'billing'
-        ];
-
-        // Update whois contacts
-        if (!empty($post)) {
-            $params = [];
-            $remote_fields_map = array_flip($fields_map);
-            foreach ($post as $type => $contact) {
-                $formatted_contact = [
-                    'external_id' => $type
-                ];
-                foreach ($contact as $contact_field => $contact_value) {
-                    if (isset($remote_fields_map[$contact_field])) {
-                        $formatted_contact[$remote_fields_map[$contact_field]] = $contact_value;
-                    }
-                }
-
-                if (isset($formatted_contact['first_name'])) {
-                    $name_parts = explode(' ', $formatted_contact['first_name'], 2);
-                    $formatted_contact['first_name'] = $name_parts[0] ?? null;
-                    $formatted_contact['last_name'] = $name_parts[1] ?? null;
-                }
-
-                $params[] = $formatted_contact;
-            }
-            $this->setDomainContacts($service_fields->domain, $params, $service->module_row_id);
-
-            $vars = (object) $post;
-        }
-
-        $this->view->set('service_fields', $service_fields);
-        $this->view->set('service_id', $service->id);
-        $this->view->set('client_id', $service->client_id);
-        $this->view->set('sections', $sections);
-        $this->view->set('whois_fields', Configure::get('Connectreseller.whois_fields'));
-        $this->view->set('vars', ($vars ?? new stdClass()));
-
-        $this->view->setDefaultView('components' . DS . 'modules' . DS . 'connectreseller' . DS);
-
-        return $this->view->fetch();
+    public function tabWhois($package, $service, array $get = null, array $post = null, array $files = null)
+    {
+        return $this->manageWhois('tab_whois', $package, $service, $get, $post, $files);
     }
 
     /**
@@ -1119,14 +1043,25 @@ class Connectreseller extends RegistrarModule
      * @param array $files Any FILES parameters
      * @return string The string representing the contents of this tab
      */
-    public function tabClientWhois(
-        $package,
-        $service,
-        array $get = null,
-        array $post = null,
-        array $files = null
-    ) {
-        $this->view = new View('tab_client_whois', 'default');
+    public function tabClientWhois($package, $service, array $get = null, array $post = null, array $files = null)
+    {
+        return $this->manageWhois('tab_client_whois', $package, $service, $get, $post, $files);
+    }
+
+    /**
+     * Handle updating whois information
+     *
+     * @param string $view The name of the view to fetch
+     * @param stdClass $package An stdClass object representing the package
+     * @param stdClass $service An stdClass object representing the service
+     * @param array $get Any GET arguments (optional)
+     * @param array $post Any POST arguments (optional)
+     * @param array $files Any FILES data (optional)
+     * @return string The rendered view
+     */
+    private function manageWhois($view, $package, $service, $get, $post, $files)
+    {
+        $this->view = new View($view, 'default');
         $this->view->base_uri = $this->base_uri;
 
         // Load the helpers required for this view
@@ -1137,43 +1072,7 @@ class Connectreseller extends RegistrarModule
 
         // Fetch domain contacts
         try {
-            $contacts = $this->getDomainContacts($service_fields->domain, $service->module_row_id);
-
-            $vars = (object) [];
-            foreach ($contacts as $contact) {
-                if (!is_array($contact)) {
-                    continue;
-                }
-
-                // Set contact type
-                $type = $contact['external_id'] ?? '';
-                unset($contact['external_id']);
-
-                if (!isset($vars->$type)) {
-                    $vars->$type = [];
-                }
-
-                // Format contact
-                $fields_map = [
-                    'email' => 'EmailAddress',
-                    'phone' => 'PhoneNo',
-                    'first_name' => 'Name',
-                    'address1' => 'Address',
-                    'city' => 'City',
-                    'state' => 'StateName',
-                    'zip' => 'Zip',
-                    'country' => 'CountryName'
-                ];
-                foreach ($contact as $field => $value) {
-                    if (isset($fields_map[$field])) {
-                        $vars->$type[$fields_map[$field]] = $value;
-                    }
-                }
-
-                if (isset($vars->$type['Name'])) {
-                    $vars->$type['Name'] = trim($vars->$type['Name'] . ' ' . $contact['last_name']);
-                }
-            }
+            $vars = $this->getDomainContacts($service_fields->domain, $service->module_row_id);
         } catch (Throwable $e) {
             $this->Input->setErrors(['errors' => ['contacts' => $e->getMessage()]]);
         }
@@ -1186,27 +1085,7 @@ class Connectreseller extends RegistrarModule
 
         // Update whois contacts
         if (!empty($post)) {
-            $params = [];
-            $remote_fields_map = array_flip($fields_map);
-            foreach ($post as $type => $contact) {
-                $formatted_contact = [
-                    'external_id' => $type
-                ];
-                foreach ($contact as $contact_field => $contact_value) {
-                    if (isset($remote_fields_map[$contact_field])) {
-                        $formatted_contact[$remote_fields_map[$contact_field]] = $contact_value;
-                    }
-                }
-
-                if (isset($formatted_contact['first_name'])) {
-                    $name_parts = explode(' ', $formatted_contact['first_name'], 2);
-                    $formatted_contact['first_name'] = $name_parts[0] ?? null;
-                    $formatted_contact['last_name'] = $name_parts[1] ?? null;
-                }
-
-                $params[] = $formatted_contact;
-            }
-            $this->setDomainContacts($service_fields->domain, $params, $service->module_row_id);
+            $this->setDomainContacts($service_fields->domain, $post, $service->module_row_id);
 
             $vars = (object) $post;
         }
@@ -1233,53 +1112,9 @@ class Connectreseller extends RegistrarModule
      * @param array $files Any FILES parameters
      * @return string The string representing the contents of this tab
      */
-    public function tabNameservers(
-        $package,
-        $service,
-        array $get = null,
-        array $post = null,
-        array $files = null
-    ) {
-        $this->view = new View('tab_nameservers', 'default');
-        $this->view->base_uri = $this->base_uri;
-
-        // Load the helpers required for this view
-        Loader::loadHelpers($this, ['Form', 'Html']);
-
-        // Get service fields
-        $service_fields = $this->serviceFieldsToObject($service->fields);
-
-        // Fetch domain nameservers
-        try {
-            $nameservers = $this->getDomainNameServers($service_fields->domain, $service->module_row_id);
-
-            $vars = (object) [];
-            foreach ($nameservers as $i => $nameserver) {
-                $vars->{'ns[' . ($i + 1) . ']'} = $nameserver['url'];
-            }
-        } catch (Throwable $e) {
-            $this->Input->setErrors(['errors' => ['nameservers' => $e->getMessage()]]);
-        }
-
-        // Update nameservers
-        if (!empty($post)) {
-            $this->setDomainNameservers($service_fields->domain, $service->module_row_id, $post['ns'] ?? []);
-
-            $vars = (object) [];
-            foreach ($post['ns'] ?? [] as $i => $nameserver) {
-                $vars->{'ns[' . $i . ']'} = $nameserver;
-            }
-        }
-
-        $this->view->set('service_fields', $service_fields);
-        $this->view->set('service_id', $service->id);
-        $this->view->set('client_id', $service->client_id);
-        $this->view->set('nameserver_fields', Configure::get('Connectreseller.nameserver_fields'));
-        $this->view->set('vars', ($vars ?? new stdClass()));
-
-        $this->view->setDefaultView('components' . DS . 'modules' . DS . 'connectreseller' . DS);
-
-        return $this->view->fetch();
+    public function tabNameservers($package, $service, array $get = null, array $post = null, array $files = null)
+    {
+        return $this->manageNameservers('tab_nameservers', $package, $service, $get, $post, $files);
     }
 
     /**
@@ -1292,14 +1127,25 @@ class Connectreseller extends RegistrarModule
      * @param array $files Any FILES parameters
      * @return string The string representing the contents of this tab
      */
-    public function tabClientNameservers(
-        $package,
-        $service,
-        array $get = null,
-        array $post = null,
-        array $files = null
-    ) {
-        $this->view = new View('tab_client_nameservers', 'default');
+    public function tabClientNameservers($package, $service, array $get = null, array $post = null, array $files = null)
+    {
+        return $this->manageNameservers('tab_client_nameservers', $package, $service, $get, $post, $files);
+    }
+
+    /**
+     * Handle updating nameserver information
+     *
+     * @param string $view The name of the view to fetch
+     * @param stdClass $package An stdClass object representing the package
+     * @param stdClass $service An stdClass object representing the service
+     * @param array $get Any GET arguments (optional)
+     * @param array $post Any POST arguments (optional)
+     * @param array $files Any FILES data (optional)
+     * @return string The rendered view
+     */
+    private function manageNameservers($view, $package, $service, $get, $post, $files)
+    {
+        $this->view = new View($view, 'default');
         $this->view->base_uri = $this->base_uri;
 
         // Load the helpers required for this view
@@ -1353,75 +1199,7 @@ class Connectreseller extends RegistrarModule
      */
     public function tabDns($package, $service, array $get = null, array $post = null, array $files = null)
     {
-        $this->view = new View('tab_dns', 'default');
-        $this->view->base_uri = $this->base_uri;
-
-        // Load the helpers required for this view
-        Loader::loadHelpers($this, ['Form', 'Html']);
-
-        // Get service fields
-        $service_fields = $this->serviceFieldsToObject($service->fields);
-
-        // Fetch domain settings
-        $domain_settings = (object) $this->getDomainInfo($service_fields->domain, $service->module_row_id);
-
-        // Load API command
-        $row = $this->getModuleRow($service->module_row_id);
-        $api = $this->getApi($row->meta->api_key);
-
-        $command = new ConnectresellerDomain($api);
-
-        // Add DNS record
-        if (!empty($post) && !isset($post['action'])) {
-            $command->ManageDNSRecords(['WebsiteId' => $domain_settings->websiteId]);
-            $response = $command->AddDNSRecord(array_merge([
-                'DNSZoneID' => $dns_records[0]->dnszoneID ?? null,
-                'RecordPriority' => 1
-            ], $post));
-            $this->processResponse($api, $response);
-
-            $vars = (object) $post;
-        }
-
-        // Delete DNS record
-        if (($post['action'] ?? '') == 'delete') {
-            $command->ManageDNSRecords(['WebsiteId' => $domain_settings->websiteId]);
-            $response = $command->DeleteDNSRecord([
-                'DNSZoneID' => $dns_records[0]->dnszoneID ?? null,
-                'DNSZoneRecordID' => $post['dnszoneRecordID'] ?? null
-            ]);
-            $this->processResponse($api, $response);
-        }
-
-        // Fetch domain DNS records
-        try {
-            $response = $command->ViewDNSRecord(['WebsiteId' => $domain_settings->websiteId]);
-            $this->processResponse($api, $response);
-            $dns_records = $response->response()->responseData ?? [];
-        } catch (Throwable $e) {
-            $this->Input->setErrors(['errors' => ['dns' => $e->getMessage()]]);
-        }
-
-        // Set supported record types
-        $supported_types = [
-            'A' => 'A',
-            'AAAA' => 'AAAA',
-            'SOA' => 'SOA',
-            'NS' => 'NS',
-            'CNAME' => 'CNAME',
-            'MX' => ' MX'
-        ];
-
-        $this->view->set('service_fields', $service_fields);
-        $this->view->set('service_id', $service->id);
-        $this->view->set('client_id', $service->client_id);
-        $this->view->set('dns_records', $dns_records ?? []);
-        $this->view->set('supported_types', $supported_types);
-        $this->view->set('vars', ($vars ?? new stdClass()));
-
-        $this->view->setDefaultView('components' . DS . 'modules' . DS . 'connectreseller' . DS);
-
-        return $this->view->fetch();
+        return $this->manageDns('tab_dns', $package, $service, $get, $post, $files);
     }
 
     /**
@@ -1436,7 +1214,23 @@ class Connectreseller extends RegistrarModule
      */
     public function tabClientDns($package, $service, array $get = null, array $post = null, array $files = null)
     {
-        $this->view = new View('tab_client_dns', 'default');
+        return $this->manageDns('tab_client_dns', $package, $service, $get, $post, $files);
+    }
+
+    /**
+     * Handle updating DNS Record information
+     *
+     * @param string $view The name of the view to fetch
+     * @param stdClass $package An stdClass object representing the package
+     * @param stdClass $service An stdClass object representing the service
+     * @param array $get Any GET arguments (optional)
+     * @param array $post Any POST arguments (optional)
+     * @param array $files Any FILES data (optional)
+     * @return string The rendered view
+     */
+    private function manageDns($view, $package, $service, $get, $post, $files)
+    {
+        $this->view = new View($view, 'default');
         $this->view->base_uri = $this->base_uri;
 
         // Load the helpers required for this view
@@ -1452,38 +1246,33 @@ class Connectreseller extends RegistrarModule
         $row = $this->getModuleRow($service->module_row_id);
         $api = $this->getApi($row->meta->api_key);
 
-        $command = new ConnectresellerDomain($api);
-
         // Add DNS record
-        if (!empty($post) && !isset($post['action'])) {
-            $command->ManageDNSRecords(['WebsiteId' => $domain_settings->websiteId]);
-            $response = $command->AddDNSRecord(array_merge([
-                'DNSZoneID' => $dns_records[0]->dnszoneID ?? null,
-                'RecordPriority' => 1
-            ], $post));
-            $this->processResponse($api, $response);
+        if (!empty($post)) {
+            $command = new ConnectresellerDomain($api);
+            if (!isset($post['action'])) {
+                $command->ManageDNSRecords(['WebsiteId' => $domain_settings->websiteId]);
+                $response = $command->AddDNSRecord(array_merge([
+                    'DNSZoneID' => $domain_settings->dnszoneId ?? null,
+                    'RecordPriority' => 1
+                ], $post));
+                $this->processResponse($api, $response);
 
-            $vars = (object) $post;
-        }
+                $vars = (object) $post;
+            }
 
-        // Delete DNS record
-        if (($post['action'] ?? '') == 'delete') {
-            $command->ManageDNSRecords(['WebsiteId' => $domain_settings->websiteId]);
-            $response = $command->DeleteDNSRecord([
-                'DNSZoneID' => $dns_records[0]->dnszoneID ?? null,
-                'DNSZoneRecordID' => $post['dnszoneRecordID'] ?? null
-            ]);
-            $this->processResponse($api, $response);
+            // Delete DNS record
+            if (($post['action'] ?? '') == 'delete') {
+                $command->ManageDNSRecords(['WebsiteId' => $domain_settings->websiteId]);
+                $response = $command->DeleteDNSRecord([
+                    'DNSZoneID' => $domain_settings->dnszoneId ?? null,
+                    'DNSZoneRecordID' => $post['dnszoneRecordID'] ?? null
+                ]);
+                $this->processResponse($api, $response);
+            }
         }
 
         // Fetch domain DNS records
-        try {
-            $response = $command->ViewDNSRecord(['WebsiteId' => $domain_settings->websiteId]);
-            $this->processResponse($api, $response);
-            $dns_records = $response->response()->responseData ?? [];
-        } catch (Throwable $e) {
-            $this->Input->setErrors(['errors' => ['dns' => $e->getMessage()]]);
-        }
+        $dns_records = $this->getDnsRecords($api, $domain_settings);
 
         // Set supported record types
         $supported_types = [
@@ -1508,6 +1297,27 @@ class Connectreseller extends RegistrarModule
     }
 
     /**
+     * Get the DNS records for a domain
+     *
+     * @param ConnectresellerApi $api The object for controlling the API
+     * @param stdClass $domain_settings A list of settings for the domain
+     * @return array The list of DNS records
+     */
+    private function getDnsRecords($api, $domain_settings)
+    {
+        $dns_records = null;
+        $command = new ConnectresellerDomain($api);
+        try {
+            $response = $command->ViewDNSRecord(['WebsiteId' => $domain_settings->websiteId]);
+            $this->processResponse($api, $response);
+            $dns_records = $response->response()->responseData ?? [];
+        } catch (Throwable $e) {
+            $this->Input->setErrors(['errors' => ['dns' => $e->getMessage()]]);
+        }
+        return $dns_records;
+    }
+
+    /**
      * URL Forwarding tab
      *
      * @param stdClass $package A stdClass object representing the current package
@@ -1517,74 +1327,9 @@ class Connectreseller extends RegistrarModule
      * @param array $files Any FILES parameters
      * @return string The string representing the contents of this tab
      */
-    public function tabUrlForwarding(
-        $package,
-        $service,
-        array $get = null,
-        array $post = null,
-        array $files = null
-    ) {
-        $this->view = new View('tab_urlforwarding', 'default');
-        $this->view->base_uri = $this->base_uri;
-
-        // Load the helpers required for this view
-        Loader::loadHelpers($this, ['Form', 'Html']);
-
-        // Get service fields
-        $service_fields = $this->serviceFieldsToObject($service->fields);
-
-        // Fetch domain settings
-        $domain_settings = (object) $this->getDomainInfo($service_fields->domain, $service->module_row_id);
-
-        // Load API command
-        $row = $this->getModuleRow($service->module_row_id);
-        $api = $this->getApi($row->meta->api_key);
-
-        $command = new ConnectresellerDomain($api);
-
-        // Update rules
-        if (!empty($post)) {
-            // Add rule
-            if (!isset($post['delete'])) {
-                $command->ManageDNSRecords(['WebsiteId' => $domain_settings->websiteId]);
-                $response = $command->SetDomainForwarding([
-                    'domainNameId' => $this->getDomainId($service_fields->domain),
-                    'websiteId' => $domain_settings->websiteId,
-                    'isMasking' => 1,
-                    'rewrite' => $post['destination'] ?? ''
-                ]);
-            }
-
-            // Delete rule
-            if (isset($post['delete'])) {
-                $response = $command->deletedomainforwarding(['websiteId' => $domain_settings->websiteId]);
-            }
-
-            // Set errors, if any
-            if (isset($response)) {
-                $this->processResponse($api, $response);
-            }
-
-            $vars = (object) $post;
-        }
-
-        // Fetch domain url forwarding rules
-        try {
-            $response = $command->GetDomainForwarding(['websiteId' => $domain_settings->websiteId]);
-            $domain_rule = $response->response();
-        } catch (Throwable $e) {
-            $this->Input->setErrors(['errors' => ['url_forwarding' => $e->getMessage()]]);
-        }
-
-        $this->view->set('service_fields', $service_fields);
-        $this->view->set('service_id', $service->id);
-        $this->view->set('client_id', $service->client_id);
-        $this->view->set('domain_rule', $domain_rule->responseData ?? null);
-        $this->view->set('vars', ($vars ?? new stdClass()));
-
-        $this->view->setDefaultView('components' . DS . 'modules' . DS . 'connectreseller' . DS);
-
-        return $this->view->fetch();
+    public function tabUrlForwarding($package, $service, array $get = null, array $post = null, array $files = null)
+    {
+        return $this->manageUrlForwarding('tab_urlforwarding', $package, $service, $get, $post, $files);
     }
 
     /**
@@ -1604,7 +1349,23 @@ class Connectreseller extends RegistrarModule
         array $post = null,
         array $files = null
     ) {
-        $this->view = new View('tab_client_urlforwarding', 'default');
+        return $this->manageUrlForwarding('tab_client_urlforwarding', $package, $service, $get, $post, $files);
+    }
+
+    /**
+     * Handle updating URL formatting information
+     *
+     * @param string $view The name of the view to fetch
+     * @param stdClass $package An stdClass object representing the package
+     * @param stdClass $service An stdClass object representing the service
+     * @param array $get Any GET arguments (optional)
+     * @param array $post Any POST arguments (optional)
+     * @param array $files Any FILES data (optional)
+     * @return string The rendered view
+     */
+    private function manageUrlForwarding($view, $package, $service, $get, $post, $files)
+    {
+        $this->view = new View($view, 'default');
         $this->view->base_uri = $this->base_uri;
 
         // Load the helpers required for this view
@@ -1637,7 +1398,10 @@ class Connectreseller extends RegistrarModule
 
             // Delete rule
             if (isset($post['delete'])) {
-                $response = $command->deletedomainforwarding(['websiteId' => $domain_settings->websiteId]);
+                $response = $command->deletedomainforwarding([
+                    'domainNameId' => $this->getDomainId($service_fields->domain),
+                    'websiteId' => $domain_settings->websiteId
+                ]);
             }
 
             // Set errors, if any
@@ -1677,76 +1441,9 @@ class Connectreseller extends RegistrarModule
      * @param array $files Any FILES parameters
      * @return string The string representing the contents of this tab
      */
-    public function tabSettings(
-        $package,
-        $service,
-        array $get = null,
-        array $post = null,
-        array $files = null
-    ) {
-        $this->view = new View('tab_settings', 'default');
-        $this->view->base_uri = $this->base_uri;
-
-        // Load the helpers required for this view
-        Loader::loadHelpers($this, ['Form', 'Html']);
-
-        // Get service fields
-        $service_fields = $this->serviceFieldsToObject($service->fields);
-
-        // Determine if this service has access to id_protection
-        $id_protection = $this->featureServiceEnabled('id_protection', $service);
-
-        // Determine if this service has access to epp_code
-        $epp_code = $package->meta->epp_code ?? '0';
-
-        // Update domain settings
-        if (!empty($post)) {
-            if (!empty($post['registrarlock'])) {
-                if ($post['registrarlock'] == '1') {
-                    $this->lockDomain($service_fields->domain, $service->module_row_id);
-                }
-                if ($post['registrarlock'] == '0') {
-                    $this->unlockDomain($service_fields->domain, $service->module_row_id);
-                }
-            }
-
-            if (!empty($post['privatewhois'])) {
-                $row = $this->getModuleRow($service->module_row_id);
-                $api = $this->getApi($row->meta->api_key);
-
-                // Load API command
-                $command = new ConnectresellerDomain($api);
-
-                if ($post['privatewhois'] == '1') {
-                    $response = $command->ManageDomainPrivacyProtection([
-                        'domainNameId' => $this->getDomainId($service_fields->domain),
-                        'iswhoisprotected' => 1
-                    ]);
-                }
-                if ($post['privatewhois'] == '0') {
-                    $response = $command->ManageDomainPrivacyProtection([
-                        'domainNameId' => $this->getDomainId($service_fields->domain),
-                        'iswhoisprotected' => 0
-                    ]);
-                }
-
-                $this->processResponse($api, $response);
-            }
-        }
-
-        // Fetch domain info
-        $vars = (object) $this->getDomainInfo($service_fields->domain, $service->module_row_id);
-
-        $this->view->set('service_fields', $service_fields);
-        $this->view->set('service_id', $service->id);
-        $this->view->set('client_id', $service->client_id);
-        $this->view->set('id_protection', $id_protection);
-        $this->view->set('epp_code', $epp_code);
-        $this->view->set('vars', $vars);
-
-        $this->view->setDefaultView('components' . DS . 'modules' . DS . 'connectreseller' . DS);
-
-        return $this->view->fetch();
+    public function tabSettings($package, $service, array $get = null, array $post = null, array $files = null)
+    {
+        return $this->manageSettings('tab_settings', $package, $service, $get, $post, $files);
     }
 
     /**
@@ -1759,14 +1456,25 @@ class Connectreseller extends RegistrarModule
      * @param array $files Any FILES parameters
      * @return string The string representing the contents of this tab
      */
-    public function tabClientSettings(
-        $package,
-        $service,
-        array $get = null,
-        array $post = null,
-        array $files = null
-    ) {
-        $this->view = new View('tab_client_settings', 'default');
+    public function tabClientSettings($package, $service, array $get = null, array $post = null, array $files = null)
+    {
+        return $this->manageSettings('tab_client_settings', $package, $service, $get, $post, $files);
+    }
+
+    /**
+     * Handle updating settings information
+     *
+     * @param string $view The name of the view to fetch
+     * @param stdClass $package An stdClass object representing the package
+     * @param stdClass $service An stdClass object representing the service
+     * @param array $get Any GET arguments (optional)
+     * @param array $post Any POST arguments (optional)
+     * @param array $files Any FILES data (optional)
+     * @return string The rendered view
+     */
+    private function manageSettings($view, $package, $service, $get, $post, $files)
+    {
+        $this->view = new View($view, 'default');
         $this->view->base_uri = $this->base_uri;
 
         // Load the helpers required for this view
@@ -2288,12 +1996,12 @@ class Connectreseller extends RegistrarModule
                         continue;
                     }
 
-                    if (!isset($response[$tld][$currency->code])) {
-                        $response[$tld][$currency->code] = [];
+                    if (!isset($pricing[$tld][$currency->code])) {
+                        $pricing[$tld][$currency->code] = [];
                     }
 
-                    if (!isset($response[$tld][$currency->code][$i])) {
-                        $response[$tld][$currency->code][$i] = [
+                    if (!isset($pricing[$tld][$currency->code][$i])) {
+                        $pricing[$tld][$currency->code][$i] = [
                             'register' => $this->Currencies->convert(
                                 ($tld_price->registrationPrice ?? 0) * $i,
                                 $tld_price->currencyCode ?? 'USD',
@@ -2632,31 +2340,26 @@ class Connectreseller extends RegistrarModule
             'technical' => str_replace('OR_', '', $data->responseData->technicalContactId ?? null),
             'billing' => str_replace('OR_', '', $data->responseData->billingContactId ?? null)
         ];
+        $contact_fields = [
+            'EmailAddress', 'PhoneNo', 'Name', 'Address1', 'City', 'StateName', 'ZipCode', 'CountryName'
+        ];
 
-        $contacts = [];
+        $vars = (object) [];
         foreach ($contact_ids as $type => $id) {
             $contact = $command->ViewRegistrant(['RegistrantContactId' => $id]);
             $response = $contact->response();
 
             $this->processResponse($api, $contact);
 
-            $name_parts = explode(' ', $response->responseData->name ?? null, 2);
-            $contacts[] = [
-                'external_id' => $type,
-                'email' => $response->responseData->emailAddress ?? null,
-                'phone' => '+' .($response->responseData->phoneCode ?? null) . '.'
-                    . ($response->responseData->phoneNo ?? null),
-                'first_name' => $name_parts[0] ?? null,
-                'last_name' => $name_parts[1] ?? null,
-                'address1' => $response->responseData->address1 ?? null,
-                'city' => $response->responseData->city ?? null,
-                'state' => $response->responseData->stateName ?? null,
-                'zip' => $response->responseData->zipCode ?? null,
-                'country' => $response->responseData->countryName ?? null
-            ];
+            $vars->{$type} = [];
+            $response_data = (array)$response->responseData;
+            foreach ($contact_fields as $contact_field) {
+                $vars->{$type}[$contact_field] = $response_data[lcfirst($contact_field)];
+            }
+            $vars->{$type}['PhoneNo'] = '+' . $response_data['phoneCode'] . '.' . $vars->{$type}['PhoneNo'];
         }
 
-        return $contacts;
+        return $vars;
     }
 
     /**
@@ -2837,21 +2540,18 @@ class Connectreseller extends RegistrarModule
 
         // Create new contacts, if they have not been created during provisioning
         foreach ($contacts as $id => $remote_contact) {
-            if (str_replace('OR_', '', $data->responseData->registrantContactId ?? null) == $remote_contact && $id !== 'registrantContactId') {
-                $contact = $vars[0] ?? [];
-                $params = [
-                    'Name' => trim($contact['first_name'] . ' ' . $contact['last_name']),
-                    'EmailAddress' => $contact['email'] ?? null,
-                    'CompanyName' => $contact['company_name'] ?? 'NA',
-                    'Address' => $contact['address1'] ?? null,
-                    'City' => $contact['city'] ?? null,
-                    'StateName' => $contact['state'] ?? null,
-                    'CountryName' => $contact['country'] ?? null,
-                    'Zip' => $contact['zip'] ?? null,
-                    'PhoneNo_cc' => '1',
-                    'PhoneNo' => '1111111',
-                    'Id' => $data->responseData->customerId ?? null
-                ];
+            if (str_replace('OR_', '', $data->responseData->registrantContactId ?? null) == $remote_contact
+                && $id !== 'registrantContactId'
+            ) {
+                $params = $vars['registrant'] ?? [];
+                $params['Id'] = $data->responseData->customerId ?? null;
+                $params['CompanyName'] = $params['CompanyName'] ?? 'NA';
+                $params['Zip'] = $params['ZipCode'];
+                $phone_parts = explode('.', $params['PhoneNo']);
+                $params['PhoneNo'] = count($phone_parts) > 1 ? $phone_parts[1] : $phone_parts[0];
+                $params['PhoneNo_cc'] = count($phone_parts) > 1 ? $phone_parts[0] : '1';
+                $params['Address'] = $params['Address1'];
+                unset($params['ZipCode'], $params['Address1']);
 
                 $response = $command->AddRegistrantContact($params);
                 $this->processResponse($api, $response);
@@ -2870,37 +2570,30 @@ class Connectreseller extends RegistrarModule
         ], $contacts));
 
         // Update contacts
-        foreach ($vars as $contact) {
+        foreach ($vars as $type => $contact) {
             // Get phone extension
-            $phone_extension = '1';
-            if (str_contains($contact['phone'], '.')) {
-                $phone_parts = explode('.', $contact['phone'], 2);
-                $phone_extension = ltrim($phone_parts[0] ?? '1', '+');
+            $phone_country_code = '1';
+            if (str_contains($contact['PhoneNo'], '.')) {
+                $phone_parts = explode('.', $contact['PhoneNo'], 2);
+                $phone_country_code = ltrim($phone_parts[0] ?? '1', '+');
             }
 
             // Get phone number
-            $phone_number = '1111111';
-            if (str_contains($contact['phone'], '.')) {
-                $phone_parts = explode('.', $contact['phone'], 2);
+            $phone_number = $contact['PhoneNo'];
+            if (str_contains($contact['PhoneNo'], '.')) {
+                $phone_parts = explode('.', $contact['PhoneNo'], 2);
                 $phone_number = $phone_parts[1] ?? '1111111';
             }
 
-            $params = [
-                'Id' => $contacts[$contact['external_id'] . 'ContactId'] ?? null,
-                'Name' => trim($contact['first_name'] . ' ' . $contact['last_name']),
-                'EmailAddress' => $contact['email'] ?? null,
-                'CompanyName' => $contact['company_name'] ?? 'NA',
-                'Address1' => $contact['address1'] ?? null,
-                'City' => $contact['city'] ?? null,
-                'StateName' => $contact['state'] ?? null,
-                'CountryName' => $contact['country'] ?? null,
-                'Zip' => $contact['zip'] ?? null,
-                'PhoneNo_cc' => $phone_extension,
-                'PhoneNo' => $phone_number,
-                'domainId' => $this->getDomainId($domain, $module_row_id)
-            ];
+            $contact['CompanyName'] = $contact['CompanyName'] ?? 'NA';
+            $contact['Zip'] = $contact['ZipCode'];
+            $contact['Address'] = $contact['Address1'];
+            unset($contact['ZipCode'], $contact['Address1']);
+            $contact['RegistrantContactId'] = (int)$contacts[$type . 'ContactId'] ?? null;
+            $contact['PhoneNo_cc'] = $phone_country_code;
+            $contact['PhoneNo'] = $phone_number;
 
-            $response = $command->ModifyRegistrantContact_whmcs($params);
+            $response = $command->ModifyRegistrantContact($contact);
             $this->processResponse($api, $response);
         }
 
@@ -3128,7 +2821,7 @@ class Connectreseller extends RegistrarModule
         }
 
         $last_request = $api->lastRequest();
-        $this->log($last_request['url'], serialize($last_request['args'] ?? []), 'input', true);
+        $this->log($last_request['url'], json_encode($last_request['params'] ?? []), 'input', true);
         $this->log($last_request['url'], $response->raw(), 'output', $response->status() == 200);
     }
 
