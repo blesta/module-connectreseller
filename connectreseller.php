@@ -1491,7 +1491,7 @@ class Connectreseller extends RegistrarModule
 
         // Update domain settings
         if (!empty($post)) {
-            if (!empty($post['registrarlock'])) {
+            if (array_key_exists('registrarlock', $post)) {
                 if ($post['registrarlock'] == '1') {
                     $this->lockDomain($service_fields->domain, $service->module_row_id);
                 }
