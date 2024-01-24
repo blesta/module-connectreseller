@@ -1862,6 +1862,38 @@ class Connectreseller extends RegistrarModule
     }
 
     /**
+     * Gets the domain registration date
+     *
+     * @param stdClass $service The service belonging to the domain to lookup
+     * @param string $format The format to return the registration date in
+     * @return string The domain registration date in UTC time in the given format
+     * @see Services::get()
+     */
+    public function getRegistrationDate($service, $format = 'Y-m-d H:i:s')
+    {
+        $domain = $this->getServiceDomain($service);
+        $module_row_id = $service->module_row_id ?? null;
+
+        $row = $this->getModuleRow($module_row_id);
+        $api = $this->getApi($row->meta->api_key);
+
+        // Load API command
+        $command = new ConnectresellerDomain($api);
+
+        // Get domain
+        $response = $command->get(['websiteName' => $domain]);
+        $data = $response->response();
+
+        $this->processResponse($api, $response);
+
+        if (isset($data->responseData->creationDate)) {
+            return date($format, (int) $data->responseData->creationDate / 1000);
+        }
+
+        return null;
+    }
+
+    /**
      * Gets the domain expiration date
      *
      * @param stdClass $service The service belonging to the domain to lookup
