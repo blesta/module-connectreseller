@@ -553,10 +553,23 @@ class Connectreseller extends RegistrarModule
             ]);
             $this->processResponse($api, $response);
             $registered_domain = $response->response();
+
+            // Return service fields
+            return [
+                [
+                    'key' => 'domain',
+                    'value' => $vars['Websitename'],
+                    'encrypted' => 0
+                ],
+                [
+                    'key' => 'id',
+                    'value' => $registered_domain->responseData->domainNameId ?? null,
+                    'encrypted' => 0
+                ]
+            ];
         }
 
-        // Return service fields
-        return [
+        $meta = [
             [
                 'key' => 'domain',
                 'value' => $vars['Websitename'],
@@ -564,10 +577,20 @@ class Connectreseller extends RegistrarModule
             ],
             [
                 'key' => 'id',
-                'value' => $registered_domain->responseData->domainNameId ?? null,
+                'value' => null,
                 'encrypted' => 0
             ]
         ];
+
+        for ($i = 1; $i <= 5; $i++) {
+            $meta[] = [
+                'key' => 'ns' . $i,
+                'value' => $vars['ns'][$i] ?? '',
+                'encrypted' => 0
+            ];
+        }
+
+        return $meta;
     }
 
     /**
