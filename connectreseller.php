@@ -800,7 +800,7 @@ class Connectreseller extends RegistrarModule
         for ($i = 1; $i <= 4; $i++) {
             $vars['ns'][$i] = $vars['ns' . $i] ?? '';
         }
-        
+
         $this->Input->setRules($this->getServiceRules($vars));
 
         return $this->Input->validates($vars);
@@ -1669,10 +1669,7 @@ class Connectreseller extends RegistrarModule
             return $this->arrayToModuleFields($fields, null, $vars);
         } else {
             // Handle domain registration
-            $fields = array_merge(
-                Configure::get('Connectreseller.domain_fields'),
-                Configure::get('Connectreseller.nameserver_fields')
-            );
+            $fields = Configure::get('Connectreseller.domain_fields');
             $module_fields = $this->arrayToModuleFields($fields, null, $vars);
 
             // We should already have the domain name don't make editable
