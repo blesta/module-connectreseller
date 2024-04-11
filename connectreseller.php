@@ -795,6 +795,12 @@ class Connectreseller extends RegistrarModule
      */
     public function validateService($package, array $vars = null)
     {
+        // Format nameservers for validation
+        $vars['ns'] = [];
+        for ($i = 1; $i <= 4; $i++) {
+            $vars['ns'][$i] = $vars['ns' . $i] ?? '';
+        }
+        
         $this->Input->setRules($this->getServiceRules($vars));
 
         return $this->Input->validates($vars);
@@ -809,6 +815,12 @@ class Connectreseller extends RegistrarModule
      */
     public function validateServiceEdit($service, array $vars = null)
     {
+        // Format nameservers for validation
+        $vars['ns'] = [];
+        for ($i = 1; $i <= 4; $i++) {
+            $vars['ns'][$i] = $vars['ns' . $i] ?? '';
+        }
+
         $this->Input->setRules($this->getServiceRules($vars, true));
 
         return $this->Input->validates($vars);
