@@ -519,19 +519,19 @@ Configure::set('Connectreseller.domain_fields', [
 
 // Nameserver fields
 Configure::set('Connectreseller.nameserver_fields', [
-    'ns[1]' => [
+    'ns1' => [
         'label' => Language::_('Connectreseller.nameserver.ns1', true),
         'type' => 'text'
     ],
-    'ns[2]' => [
+    'ns2' => [
         'label' => Language::_('Connectreseller.nameserver.ns2', true),
         'type' => 'text'
     ],
-    'ns[3]' => [
+    'ns3' => [
         'label' => Language::_('Connectreseller.nameserver.ns3', true),
         'type' => 'text'
     ],
-    'ns[4]' => [
+    'ns4' => [
         'label' => Language::_('Connectreseller.nameserver.ns4', true),
         'type' => 'text'
     ]

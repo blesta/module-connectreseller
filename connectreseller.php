@@ -582,7 +582,7 @@ class Connectreseller extends RegistrarModule
             ]
         ];
 
-        for ($i = 1; $i <= 5; $i++) {
+        for ($i = 1; $i <= 4; $i++) {
             $meta[] = [
                 'key' => 'ns' . $i,
                 'value' => $vars['ns'][$i] ?? '',
@@ -1581,7 +1581,7 @@ class Connectreseller extends RegistrarModule
         if (!isset($vars->ns) && isset($package->meta->ns)) {
             $i = 1;
             foreach ($package->meta->ns as $ns) {
-                $vars->{'ns[' . $i++ . ']'} = $ns;
+                $vars->{'ns' . $i++} = $ns;
             }
         }
 
@@ -1589,7 +1589,7 @@ class Connectreseller extends RegistrarModule
         if (!empty($vars->ns) && is_array($vars->ns)) {
             $i = 1;
             foreach ($vars->ns as $ns) {
-                $vars->{'ns[' . $i++ . ']'} = $ns;
+                $vars->{'ns' . $i++} = $ns;
             }
         }
 
@@ -1634,7 +1634,7 @@ class Connectreseller extends RegistrarModule
         if (!isset($vars->ns) && isset($package->meta->ns)) {
             $i = 1;
             foreach ($package->meta->ns as $ns) {
-                $vars->{'ns[' . $i++ . ']'} = $ns;
+                $vars->{'ns' . $i++} = $ns;
             }
         }
 
@@ -1642,7 +1642,7 @@ class Connectreseller extends RegistrarModule
         if (!empty($vars->ns) && is_array($vars->ns)) {
             $i = 1;
             foreach ($vars->ns as $ns) {
-                $vars->{'ns[' . $i++ . ']'} = $ns;
+                $vars->{'ns' . $i++} = $ns;
             }
         }
 
@@ -1697,7 +1697,7 @@ class Connectreseller extends RegistrarModule
         if (!isset($vars->ns) && isset($package->meta->ns)) {
             $i = 1;
             foreach ($package->meta->ns as $ns) {
-                $vars->{'ns[' . $i++ . ']'} = $ns;
+                $vars->{'ns' . $i++} = $ns;
             }
         }
 
@@ -1705,7 +1705,7 @@ class Connectreseller extends RegistrarModule
         if (!empty($vars->ns) && is_array($vars->ns)) {
             $i = 1;
             foreach ($vars->ns as $ns) {
-                $vars->{'ns[' . $i++ . ']'} = $ns;
+                $vars->{'ns' . $i++} = $ns;
             }
         }
 
