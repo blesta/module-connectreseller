@@ -110,7 +110,7 @@ class ConnectresellerApi
         }
         curl_close($curl);
 
-        $data = explode("\n", $result);
+        $data = explode("\n", trim($result));
 
         // Return request response
         return new ConnectresellerResponse([

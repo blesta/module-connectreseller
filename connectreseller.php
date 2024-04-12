@@ -585,7 +585,7 @@ class Connectreseller extends RegistrarModule
         for ($i = 1; $i <= 4; $i++) {
             $meta[] = [
                 'key' => 'ns' . $i,
-                'value' => $vars['ns'][$i] ?? '',
+                'value' => $vars['ns' . $i] ?? '',
                 'encrypted' => 0
             ];
         }
@@ -1195,7 +1195,7 @@ class Connectreseller extends RegistrarModule
 
             $vars = (object) [];
             foreach ($nameservers as $i => $nameserver) {
-                $vars->{'ns[' . ($i + 1) . ']'} = $nameserver['url'];
+                $vars->{'ns' . ($i + 1)} = $nameserver['url'];
             }
         } catch (Throwable $e) {
             $this->Input->setErrors(['errors' => ['nameservers' => $e->getMessage()]]);
@@ -1203,11 +1203,14 @@ class Connectreseller extends RegistrarModule
 
         // Update nameservers
         if (!empty($post)) {
+            for ($i = 1; $i <= 4; $i++) {
+                $post['ns'][$i] = $post['ns' . $i] ?? '';
+            }
             $this->setDomainNameservers($service_fields->domain, $service->module_row_id, $post['ns'] ?? []);
 
             $vars = (object) [];
             foreach ($post['ns'] ?? [] as $i => $nameserver) {
-                $vars->{'ns[' . $i . ']'} = $nameserver;
+                $vars->{'ns' . $i} = $nameserver;
             }
         }
 
@@ -2232,10 +2235,10 @@ class Connectreseller extends RegistrarModule
             'Duration' => $vars['years'] ?? 1,
             'Id' => $remote_client->responseData->clientId ?? null,
             'IsWhoisProtection' => 0,
-            'ns1' => $vars['ns'][1] ?? null,
-            'ns2' => $vars['ns'][2] ?? null,
-            'ns3' => $vars['ns'][3] ?? null,
-            'ns4' => $vars['ns'][4] ?? null,
+            'ns1' => $vars['ns1'] ?? null,
+            'ns2' => $vars['ns2'] ?? null,
+            'ns3' => $vars['ns3'] ?? null,
+            'ns4' => $vars['ns4'] ?? null,
         ]);
         $this->processResponse($api, $response);
 
