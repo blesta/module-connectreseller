@@ -553,10 +553,23 @@ class Connectreseller extends RegistrarModule
             ]);
             $this->processResponse($api, $response);
             $registered_domain = $response->response();
+
+            // Return service fields
+            return [
+                [
+                    'key' => 'domain',
+                    'value' => $vars['Websitename'],
+                    'encrypted' => 0
+                ],
+                [
+                    'key' => 'id',
+                    'value' => $registered_domain->responseData->domainNameId ?? null,
+                    'encrypted' => 0
+                ]
+            ];
         }
 
-        // Return service fields
-        return [
+        $meta = [
             [
                 'key' => 'domain',
                 'value' => $vars['Websitename'],
@@ -564,10 +577,20 @@ class Connectreseller extends RegistrarModule
             ],
             [
                 'key' => 'id',
-                'value' => $registered_domain->responseData->domainNameId ?? null,
+                'value' => null,
                 'encrypted' => 0
             ]
         ];
+
+        for ($i = 1; $i <= 4; $i++) {
+            $meta[] = [
+                'key' => 'ns' . $i,
+                'value' => $vars['ns' . $i] ?? '',
+                'encrypted' => 0
+            ];
+        }
+
+        return $meta;
     }
 
     /**
@@ -772,6 +795,12 @@ class Connectreseller extends RegistrarModule
      */
     public function validateService($package, array $vars = null)
     {
+        // Format nameservers for validation
+        $vars['ns'] = [];
+        for ($i = 1; $i <= 4; $i++) {
+            $vars['ns'][$i] = $vars['ns' . $i] ?? '';
+        }
+
         $this->Input->setRules($this->getServiceRules($vars));
 
         return $this->Input->validates($vars);
@@ -786,6 +815,12 @@ class Connectreseller extends RegistrarModule
      */
     public function validateServiceEdit($service, array $vars = null)
     {
+        // Format nameservers for validation
+        $vars['ns'] = [];
+        for ($i = 1; $i <= 4; $i++) {
+            $vars['ns'][$i] = $vars['ns' . $i] ?? '';
+        }
+
         $this->Input->setRules($this->getServiceRules($vars, true));
 
         return $this->Input->validates($vars);
@@ -1160,7 +1195,7 @@ class Connectreseller extends RegistrarModule
 
             $vars = (object) [];
             foreach ($nameservers as $i => $nameserver) {
-                $vars->{'ns[' . ($i + 1) . ']'} = $nameserver['url'];
+                $vars->{'ns' . ($i + 1)} = $nameserver['url'];
             }
         } catch (Throwable $e) {
             $this->Input->setErrors(['errors' => ['nameservers' => $e->getMessage()]]);
@@ -1168,11 +1203,14 @@ class Connectreseller extends RegistrarModule
 
         // Update nameservers
         if (!empty($post)) {
+            for ($i = 1; $i <= 4; $i++) {
+                $post['ns'][$i] = $post['ns' . $i] ?? '';
+            }
             $this->setDomainNameservers($service_fields->domain, $service->module_row_id, $post['ns'] ?? []);
 
             $vars = (object) [];
             foreach ($post['ns'] ?? [] as $i => $nameserver) {
-                $vars->{'ns[' . $i . ']'} = $nameserver;
+                $vars->{'ns' . $i} = $nameserver;
             }
         }
 
@@ -1558,7 +1596,7 @@ class Connectreseller extends RegistrarModule
         if (!isset($vars->ns) && isset($package->meta->ns)) {
             $i = 1;
             foreach ($package->meta->ns as $ns) {
-                $vars->{'ns[' . $i++ . ']'} = $ns;
+                $vars->{'ns' . $i++} = $ns;
             }
         }
 
@@ -1566,7 +1604,7 @@ class Connectreseller extends RegistrarModule
         if (!empty($vars->ns) && is_array($vars->ns)) {
             $i = 1;
             foreach ($vars->ns as $ns) {
-                $vars->{'ns[' . $i++ . ']'} = $ns;
+                $vars->{'ns' . $i++} = $ns;
             }
         }
 
@@ -1611,7 +1649,7 @@ class Connectreseller extends RegistrarModule
         if (!isset($vars->ns) && isset($package->meta->ns)) {
             $i = 1;
             foreach ($package->meta->ns as $ns) {
-                $vars->{'ns[' . $i++ . ']'} = $ns;
+                $vars->{'ns' . $i++} = $ns;
             }
         }
 
@@ -1619,7 +1657,7 @@ class Connectreseller extends RegistrarModule
         if (!empty($vars->ns) && is_array($vars->ns)) {
             $i = 1;
             foreach ($vars->ns as $ns) {
-                $vars->{'ns[' . $i++ . ']'} = $ns;
+                $vars->{'ns' . $i++} = $ns;
             }
         }
 
@@ -1634,10 +1672,7 @@ class Connectreseller extends RegistrarModule
             return $this->arrayToModuleFields($fields, null, $vars);
         } else {
             // Handle domain registration
-            $fields = array_merge(
-                Configure::get('Connectreseller.domain_fields'),
-                Configure::get('Connectreseller.nameserver_fields')
-            );
+            $fields = Configure::get('Connectreseller.domain_fields');
             $module_fields = $this->arrayToModuleFields($fields, null, $vars);
 
             // We should already have the domain name don't make editable
@@ -1674,7 +1709,7 @@ class Connectreseller extends RegistrarModule
         if (!isset($vars->ns) && isset($package->meta->ns)) {
             $i = 1;
             foreach ($package->meta->ns as $ns) {
-                $vars->{'ns[' . $i++ . ']'} = $ns;
+                $vars->{'ns' . $i++} = $ns;
             }
         }
 
@@ -1682,7 +1717,7 @@ class Connectreseller extends RegistrarModule
         if (!empty($vars->ns) && is_array($vars->ns)) {
             $i = 1;
             foreach ($vars->ns as $ns) {
-                $vars->{'ns[' . $i++ . ']'} = $ns;
+                $vars->{'ns' . $i++} = $ns;
             }
         }
 
@@ -2200,10 +2235,10 @@ class Connectreseller extends RegistrarModule
             'Duration' => $vars['years'] ?? 1,
             'Id' => $remote_client->responseData->clientId ?? null,
             'IsWhoisProtection' => 0,
-            'ns1' => $vars['ns'][1] ?? null,
-            'ns2' => $vars['ns'][2] ?? null,
-            'ns3' => $vars['ns'][3] ?? null,
-            'ns4' => $vars['ns'][4] ?? null,
+            'ns1' => $vars['ns1'] ?? null,
+            'ns2' => $vars['ns2'] ?? null,
+            'ns3' => $vars['ns3'] ?? null,
+            'ns4' => $vars['ns4'] ?? null,
         ]);
         $this->processResponse($api, $response);
 
