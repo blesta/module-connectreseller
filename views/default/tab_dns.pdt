@@ -21,7 +21,7 @@
                     ?>
                     <tr>
                         <td><?php echo ($record->recordType ?? null);?></td>
-                        <td><?php echo ($record->recordName ?? null);?></td>
+                        <td><?php echo (($record->recordName ?? null) == $service_fields->domain ? '@' : ($record->recordName ?? null));?></td>
                         <td style="max-width: 200px; overflow: hidden;"><?php echo ($record->recordContent ?? null);?></td>
                         <td><?php echo ($record->recordTTL ?? null);?></td>
                         <td>
@@ -83,6 +83,14 @@
                         ?>
                     </div>
                 </div>
+                <div class="col-md-3" id="mx_priority_field" style="display: none;">
+                    <div class="form-group">
+                        <?php
+                        $this->Form->label($this->_('Connectreseller.tab_dns.priority', true), 'priority');
+                        $this->Form->fieldText('RecordPriority', $vars->RecordPriority ?? 10, ['id' => 'priority']);
+                        ?>
+                    </div>
+                </div>
                 <div class="col-md-3">
                     <div class="form-group">
                         <?php
@@ -102,4 +110,24 @@
         <?php
         $this->Form->end();
         ?>
-    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const recordTypeSelect = document.getElementById('record_type');
+            const mxPriorityField = document.getElementById('mx_priority_field');
+
+            function togglePriorityField() {
+                if (recordTypeSelect.value === 'MX') {
+                    mxPriorityField.style.display = 'block';
+                } else {
+                    mxPriorityField.style.display = 'none';
+                }
+            }
+
+            recordTypeSelect.addEventListener('change', togglePriorityField);
+
+            // Initial state on page load
+            togglePriorityField();
+        });
+    </script>
+</div>
