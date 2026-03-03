@@ -44,9 +44,7 @@
     </table>
 </div>
 
-<div class="title_row">
-    <h6 class="form-section-header mt-4"><?php $this->_('Connectreseller.tab_urlforwarding.heading_add_rule');?></h6>
-</div>
+<h6 class="form-section-header mt-4"><?php $this->_('Connectreseller.tab_urlforwarding.heading_add_rule');?></h6>
 <div class="pad">
     <div class="row">
         <div class="col-md-6">
