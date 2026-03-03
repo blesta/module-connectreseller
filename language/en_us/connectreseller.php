@@ -9,6 +9,7 @@ $lang['Connectreseller.module_row'] = 'Account';
 $lang['Connectreseller.module_row_plural'] = 'Accounts';
 $lang['Connectreseller.module_group'] = 'Account Group';
 
+$lang['Connectreseller.back_to_manage'] = 'Back';
 
 // Module management
 $lang['Connectreseller.add_module_row'] = 'Add Account';

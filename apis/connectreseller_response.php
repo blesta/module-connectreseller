@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Connectreseller API Response
  *
