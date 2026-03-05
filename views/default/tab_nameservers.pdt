@@ -1,28 +1,27 @@
-<?php /** @var View $this **/ ?>
-
 <?php
-$this->Form->create();
+/** @var View $this **/
 ?>
 
-<h6 class="form-section-header first"><?php $this->_('Connectreseller.tab_nameservers.title_list');?></h6>
-<?php
-foreach ($nameserver_fields ?? [] as $name => $field) {
-?>
+<?php $this->Form->create(); ?>
+
+<h6 class="form-section-header first"><?php $this->_('Connectreseller.tab_nameservers.title_list'); ?></h6>
+<?php foreach ($nameserver_fields ?? [] as $name => $field) { ?>
 <div class="mb-3">
     <?php
     $this->Form->label($field['label'], $name, ['class' => 'form-label']);
-    $this->Form->fieldText($name, ($vars->{$name} ?? ''), ['id' => $name, 'class' => 'form-control', 'placeholder' => $field['label']]);
+    $this->Form->fieldText($name, $vars->{$name} ?? '', [
+        'id' => $name,
+        'class' => 'form-control',
+        'placeholder' => $field['label'],
+    ]);
     ?>
 </div>
-<?php
-}
-?>
+<?php } ?>
 
 <div class="d-flex justify-content-end">
-    <?php
-    $this->Form->fieldSubmit(null, $this->_('Connectreseller.tab_nameservers.field_submit', true), ['class' => 'btn btn-primary']);
-    ?>
+    <?php $this->Form->fieldSubmit(null, $this->_('Connectreseller.tab_nameservers.field_submit', true), [
+        'class' => 'btn btn-primary',
+    ]); ?>
 </div>
-<?php
-$this->Form->end();
+<?php $this->Form->end();
 ?>

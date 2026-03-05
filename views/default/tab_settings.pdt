@@ -1,74 +1,93 @@
-<?php /** @var View $this **/ ?>
-
 <?php
-    $this->Form->create();
-    ?>
-<h6 class="form-section-header first"><?php $this->_('Connectreseller.tab_settings.heading_settings');?></h6>
+/** @var View $this **/
+?>
+
+<?php $this->Form->create(); ?>
+<h6 class="form-section-header first"><?php $this->_('Connectreseller.tab_settings.heading_settings'); ?></h6>
 <div>
     <div class="mb-3">
-        <?php
-        $this->Form->label($this->_('Connectreseller.tab_settings.field_registrar_lock', true), 'registrarlock', ['class' => 'form-label']);
-        ?>
+        <?php $this->Form->label($this->_('Connectreseller.tab_settings.field_registrar_lock', true), 'registrarlock', [
+            'class' => 'form-label',
+        ]); ?>
         <div class="form-check">
             <?php
-            $this->Form->fieldRadio('registrarlock', '1', ($vars->isThiefProtected ?? null) == '1', ['id' => 'registrarlock_yes', 'class' => 'form-check-input']);
-            $this->Form->label($this->_('Connectreseller.tab_settings.field_registrar_lock_yes', true), 'registrarlock_yes', ['class' => 'form-check-label']);
+            $this->Form->fieldRadio('registrarlock', '1', ($vars->isThiefProtected ?? null) == '1', [
+                'id' => 'registrarlock_yes',
+                'class' => 'form-check-input',
+            ]);
+            $this->Form->label(
+                $this->_('Connectreseller.tab_settings.field_registrar_lock_yes', true),
+                'registrarlock_yes',
+                ['class' => 'form-check-label'],
+            );
             ?>
         </div>
         <div class="form-check">
             <?php
-            $this->Form->fieldRadio('registrarlock', '0', ($vars->isThiefProtected ?? null) == '0', ['id' => 'registrarlock_no', 'class' => 'form-check-input']);
-            $this->Form->label($this->_('Connectreseller.tab_settings.field_registrar_lock_no', true), 'registrarlock_no', ['class' => 'form-check-label']);
+            $this->Form->fieldRadio('registrarlock', '0', ($vars->isThiefProtected ?? null) == '0', [
+                'id' => 'registrarlock_no',
+                'class' => 'form-check-input',
+            ]);
+            $this->Form->label(
+                $this->_('Connectreseller.tab_settings.field_registrar_lock_no', true),
+                'registrarlock_no',
+                ['class' => 'form-check-label'],
+            );
             ?>
         </div>
     </div>
 
-    <?php
-    if ($id_protection ?? false) {
-    ?>
+    <?php if ($id_protection ?? false) { ?>
     <div class="mb-3">
-        <?php
-        $this->Form->label($this->_('Connectreseller.tab_settings.field_whois_privacy', true), 'privatewhois', ['class' => 'form-label']);
-        ?>
+        <?php $this->Form->label($this->_('Connectreseller.tab_settings.field_whois_privacy', true), 'privatewhois', [
+            'class' => 'form-label',
+        ]); ?>
         <div class="form-check">
             <?php
-            $this->Form->fieldRadio('privatewhois', '1', ($vars->isPrivacyProtection ?? null) == '1', ['id' => 'privatewhois_yes', 'class' => 'form-check-input']);
-            $this->Form->label($this->_('Connectreseller.tab_settings.field_whois_privacy_state_yes', true), 'privatewhois_yes', ['class' => 'form-check-label']);
+            $this->Form->fieldRadio('privatewhois', '1', ($vars->isPrivacyProtection ?? null) == '1', [
+                'id' => 'privatewhois_yes',
+                'class' => 'form-check-input',
+            ]);
+            $this->Form->label(
+                $this->_('Connectreseller.tab_settings.field_whois_privacy_state_yes', true),
+                'privatewhois_yes',
+                ['class' => 'form-check-label'],
+            );
             ?>
         </div>
         <div class="form-check">
             <?php
-            $this->Form->fieldRadio('privatewhois', '0', ($vars->isPrivacyProtection ?? null) == '0', ['id' => 'privatewhois_no', 'class' => 'form-check-input']);
-            $this->Form->label($this->_('Connectreseller.tab_settings.field_whois_privacy_state_no', true), 'privatewhois_no', ['class' => 'form-check-label']);
+            $this->Form->fieldRadio('privatewhois', '0', ($vars->isPrivacyProtection ?? null) == '0', [
+                'id' => 'privatewhois_no',
+                'class' => 'form-check-input',
+            ]);
+            $this->Form->label(
+                $this->_('Connectreseller.tab_settings.field_whois_privacy_state_no', true),
+                'privatewhois_no',
+                ['class' => 'form-check-label'],
+            );
             ?>
         </div>
     </div>
-    <?php
-    }
-    ?>
+    <?php } ?>
 </div>
 
-<?php
-if ($epp_code ?? false) {
-?>
-<h6 class="form-section-header mt-4"><?php $this->_('Connectreseller.tab_settings.heading_auth_code');?></h6>
+<?php if ($epp_code ?? false) { ?>
+<h6 class="form-section-header mt-4"><?php $this->_('Connectreseller.tab_settings.heading_auth_code'); ?></h6>
 <div class="mb-3">
     <div class="form-group">
         <p>
-            <?php $this->_('Connectreseller.tab_settings.text_auth_code');?>
-            <span class="badge bg-info"><?php echo $this->Html->safe($vars->authCode ?? '');?></span>
+            <?php $this->_('Connectreseller.tab_settings.text_auth_code'); ?>
+            <span class="badge bg-info"><?php echo $this->Html->safe($vars->authCode ?? ''); ?></span>
         </p>
     </div>
 </div>
-<?php
-    }
-    ?>
+<?php } ?>
 
 <div class="d-flex justify-content-end">
-    <?php
-    $this->Form->fieldSubmit(null, $this->_('Connectreseller.tab_settings.field_submit', true), ['class' => 'btn btn-primary']);
-    ?>
+    <?php $this->Form->fieldSubmit(null, $this->_('Connectreseller.tab_settings.field_submit', true), [
+        'class' => 'btn btn-primary',
+    ]); ?>
 </div>
-<?php
-    $this->Form->end();
-    ?>
+<?php $this->Form->end();
+?>
