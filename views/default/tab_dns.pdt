@@ -1,6 +1,4 @@
-<?php
-/** @var View $this **/
-?>
+<?php /** @var View $this **/ ?>
 
 <h6 class="form-section-header mt-0"><?php $this->_('Connectreseller.tab_dns.title_list'); ?></h6>
 <div class="mb-3">

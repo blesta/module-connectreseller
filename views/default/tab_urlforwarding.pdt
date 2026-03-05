@@ -1,6 +1,4 @@
-<?php
-/** @var View $this **/
-?>
+<?php /** @var View $this **/ ?>
 
 <?php $this->Form->create(); ?>
 <h6 class="form-section-header first"><?php $this->_('Connectreseller.tab_urlforwarding.heading_current_rules'); ?></h6>
