@@ -1,8 +1,10 @@
 <?php /** @var View $this **/ ?>
 
-<?php $this->Form->create(); ?>
-<h6 class="form-section-header first"><?php $this->_('Connectreseller.tab_urlforwarding.heading_current_rules'); ?></h6>
-<div class="pad">
+<?php
+$this->Form->create();
+?>
+<h6 class="form-section-header"><?php $this->_('Connectreseller.tab_urlforwarding.heading_current_rules'); ?></h6>
+<div class="mb-3">
     <table class="table table-striped">
         <thead>
             <tr>
@@ -24,7 +26,7 @@
                     </button>
                 </td>
             </tr>
-                    <?php } else { ?>
+            <?php } else { ?>
             <tr>
                 <td colspan="4">
                     <div class="alert alert-info w-100" role="alert">
@@ -32,13 +34,13 @@
                     </div>
                 </td>
             </tr>
-                    <?php } ?>
+            <?php } ?>
         </tbody>
     </table>
 </div>
 
 <h6 class="form-section-header mt-4"><?php $this->_('Connectreseller.tab_urlforwarding.heading_add_rule'); ?></h6>
-<div class="pad">
+<div class="mb-3">
     <div class="row">
         <div class="col-md-6">
             <div class="form-group">
@@ -58,10 +60,9 @@
     </div>
 </div>
 
-<div class="button_row">
-    <?php $this->Form->fieldSubmit(null, $this->_('Connectreseller.tab_urlforwarding.field_submit', true), [
-        'class' => 'btn btn-primary float-end',
-    ]); ?>
+<div class="d-flex justify-content-end">
+    <?php $this->Form->fieldSubmit(null, $this->_('Connectreseller.tab_urlforwarding.field_submit', true), ['class' => 'btn btn-primary float-end']); ?>
 </div>
-                    <?php $this->Form->end();
+<?php
+$this->Form->end();
 ?>

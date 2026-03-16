@@ -1,7 +1,9 @@
 <?php /** @var View $this **/ ?>
 
-<?php $this->Form->create(); ?>
-<h6 class="form-section-header first"><?php $this->_('Connectreseller.tab_settings.heading_settings'); ?></h6>
+<?php
+$this->Form->create();
+?>
+<h6 class="form-section-header"><?php $this->_('Connectreseller.tab_settings.heading_settings'); ?></h6>
 <div>
     <div class="mb-3">
         <?php $this->Form->label($this->_('Connectreseller.tab_settings.field_registrar_lock', true), 'registrarlock', [
@@ -84,8 +86,9 @@
 
 <div class="d-flex justify-content-end">
     <?php $this->Form->fieldSubmit(null, $this->_('Connectreseller.tab_settings.field_submit', true), [
-        'class' => 'btn btn-primary',
+        'class' => 'btn btn-primary'
     ]); ?>
 </div>
-<?php $this->Form->end();
+<?php
+$this->Form->end();
 ?>

@@ -30,7 +30,7 @@ foreach ($sections ?? [] as $index => $key) { ?>
 
 <div class="d-flex justify-content-end">
     <?php $this->Form->fieldSubmit(null, $this->_('Connectreseller.tab_whois.field_submit', true), [
-        'class' => 'btn btn-primary',
+        'class' => 'btn btn-primary'
     ]); ?>
 </div>
 

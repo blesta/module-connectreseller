@@ -1,8 +1,10 @@
 <?php /** @var View $this **/ ?>
 
-<?php $this->Form->create(); ?>
+<?php
+$this->Form->create();
+?>
 
-<h6 class="form-section-header first"><?php $this->_('Connectreseller.tab_nameservers.title_list'); ?></h6>
+<h6 class="form-section-header"><?php $this->_('Connectreseller.tab_nameservers.title_list'); ?></h6>
 <?php foreach ($nameserver_fields ?? [] as $name => $field) { ?>
 <div class="mb-3">
     <?php
@@ -17,9 +19,8 @@
 <?php } ?>
 
 <div class="d-flex justify-content-end">
-    <?php $this->Form->fieldSubmit(null, $this->_('Connectreseller.tab_nameservers.field_submit', true), [
-        'class' => 'btn btn-primary',
-    ]); ?>
+    <?php $this->Form->fieldSubmit(null, $this->_('Connectreseller.tab_nameservers.field_submit', true), ['class' => 'btn btn-primary']); ?>
 </div>
-<?php $this->Form->end();
+<?php
+$this->Form->end();
 ?>
