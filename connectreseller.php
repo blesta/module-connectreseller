@@ -2112,7 +2112,7 @@ class Connectreseller extends RegistrarModule
         );
 
         if ($cache) {
-            $response = unserialize(base64_decode($cache));
+            $response = safe_unserialize(base64_decode($cache));
         }
 
         // Get remote price list
@@ -2143,7 +2143,7 @@ class Connectreseller extends RegistrarModule
                 try {
                     Cache::writeCache(
                         'tlds_prices',
-                        base64_encode(serialize($response)),
+                        base64_encode(safe_serialize($response)),
                         strtotime(Configure::get('Blesta.cache_length')) - time(),
                         Configure::get('Blesta.company_id') . DS . 'modules' . DS . 'connectreseller' . DS
                     );
@@ -2818,7 +2818,7 @@ class Connectreseller extends RegistrarModule
         );
 
         if ($cache) {
-            $data = unserialize(base64_decode($cache));
+            $data = safe_unserialize(base64_decode($cache));
         }
 
         if (!isset($response)) {
