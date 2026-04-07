@@ -30,6 +30,11 @@ class ConnectresellerApi
     private $api_key;
 
     /**
+     * @var mixed The logger instance
+     */
+    private $logger;
+
+    /**
      * @var array The data sent with the last request served by this API
      */
     private $last_request = [];

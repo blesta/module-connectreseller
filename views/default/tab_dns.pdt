@@ -46,41 +46,49 @@
 $this->Form->create();
 ?>
 <h6 class="form-section-header mt-4"><?php $this->_('Connectreseller.tab_dns.title_add'); ?></h6>
-<div class="mb-3">
-    <div class="row">
-        <div class="col-md-3">
-            <div class="form-group">
-                <?php
-                $this->Form->label($this->_('Connectreseller.tab_dns.record_type', true), 'record_type');
-                $this->Form->fieldSelect('RecordType', $supported_types ?? [], $vars->RecordType ?? null, [
-                    'id' => 'record_type',
-                ]);
-                ?>
-            </div>
+<div class="row">
+    <div class="col-md-3">
+        <div class="mb-3">
+            <?php
+            $this->Form->label($this->_('Connectreseller.tab_dns.record_type', true), 'record_type', ['class' => 'form-label']);
+            $this->Form->fieldSelect('RecordType', $supported_types ?? [], $vars->RecordType ?? null, [
+                'id' => 'record_type',
+                'class' => 'form-select',
+            ]);
+            ?>
         </div>
-        <div class="col-md-3">
-            <div class="form-group">
-                <?php
-                $this->Form->label($this->_('Connectreseller.tab_dns.host', true), 'host');
-                $this->Form->fieldText('RecordName', $vars->RecordName ?? null, ['id' => 'host']);
-                ?>
-            </div>
+    </div>
+    <div class="col-md-3">
+        <div class="mb-3">
+            <?php
+            $this->Form->label($this->_('Connectreseller.tab_dns.host', true), 'host', ['class' => 'form-label']);
+            $this->Form->fieldText('RecordName', $vars->RecordName ?? null, [
+                'id' => 'host',
+                'class' => 'form-control',
+            ]);
+            ?>
         </div>
-        <div class="col-md-3">
-            <div class="form-group">
-                <?php
-                $this->Form->label($this->_('Connectreseller.tab_dns.value', true), 'value');
-                $this->Form->fieldText('RecordValue', $vars->RecordValue ?? null, ['id' => 'value']);
-                ?>
-            </div>
+    </div>
+    <div class="col-md-3">
+        <div class="mb-3">
+            <?php
+            $this->Form->label($this->_('Connectreseller.tab_dns.value', true), 'value', ['class' => 'form-label']);
+            $this->Form->fieldText('RecordValue', $vars->RecordValue ?? null, [
+                'id' => 'value',
+                'class' => 'form-control',
+            ]);
+            ?>
         </div>
-        <div class="col-md-3">
-            <div class="form-group">
-                <?php
-                $this->Form->label($this->_('Connectreseller.tab_dns.ttl', true), 'ttl');
-                $this->Form->fieldText('RecordTTL', $vars->RecordTTL ?? 3600, ['id' => 'ttl']);
-                ?>
-            </div>
+    </div>
+    <div class="col-md-3">
+        <div class="mb-3">
+            <?php
+            $this->Form->label($this->_('Connectreseller.tab_dns.ttl', true), 'ttl', ['class' => 'form-label']);
+            $this->Form->fieldText('RecordTTL', $vars->RecordTTL ?? 3600, [
+                'id' => 'ttl',
+                'class' => 'form-control',
+            ]);
+            ?>
         </div>
     </div>
 </div>

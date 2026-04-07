@@ -299,6 +299,7 @@ class Connectreseller extends RegistrarModule
      */
     public function validateConnection($api_key)
     {
+        $logger = $this->getFromContainer('logger');
         try {
             $api = $this->getApi($api_key);
 
@@ -311,9 +312,12 @@ class Connectreseller extends RegistrarModule
             ]);
             $this->processResponse($api, $response);
 
-            return ($response->status() == 200);
+            $success = ($response->status() == 200);
+            $logger->info('ConnectReseller connection test ' . ($success ? 'succeeded' : 'failed'));
+
+            return $success;
         } catch (\Throwable $e) {
-            // Trap any errors encountered, could not validate connection
+            $logger->error('ConnectReseller connection test failed: ' . $e->getMessage());
         }
 
         return false;

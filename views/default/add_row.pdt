@@ -9,9 +9,9 @@ $this->Widget->setLinkButtons([
         'attributes' => ['href' => $this->base_uri . 'settings/company/modules/manage/' . $module->id],
     ],
 ]);
+$this->Form->create(null, ['class' => 'disable-on-submit']);
 $this->Widget->create($this->_('Connectreseller.add_row.box_title', true));
 ?>
-        <?php $this->Form->create(null, ['class' => 'disable-on-submit']); ?>
 
     <div class="mb-3">
         <label for="reseller_name" class="form-label">
@@ -40,6 +40,6 @@ $this->Widget->create($this->_('Connectreseller.add_row.box_title', true));
         ]); ?>
     </div>
 
-        <?php $this->Form->end(); ?>
-        <?php $this->Widget->end();
-?>
+        <?php $this->Widget->end(); ?>
+        <?php $this->Form->end();
+        ?>

@@ -19,10 +19,8 @@ $this->Form->create();
                 <td><?php echo $this->Html->safe($domain_rule->websiteName); ?></td>
                 <td><?php echo $this->Html->safe($domain_rule->rewrite ?? $domain_rule->proxyPass); ?></td>
                 <td>
-                    <button class="btn btn-danger btn-sm" type="submit" name="delete">
-                        <i class="bi bi-slash-circle"></i> <?php $this->_(
-                            'Connectreseller.tab_urlforwarding.option_delete',
-                        ); ?>
+                    <button class="btn btn-sm btn-outline-danger" type="submit" name="delete" title="<?php $this->_('Connectreseller.tab_urlforwarding.option_delete', true); ?>">
+                        <i class="bi bi-trash"></i>
                     </button>
                 </td>
             </tr>
