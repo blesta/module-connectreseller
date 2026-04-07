@@ -1,4 +1,5 @@
 <?php
+
 use Blesta\Core\Util\Common\Traits\Container;
 
 require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'connectreseller_response.php';
@@ -29,6 +30,11 @@ class ConnectresellerApi
     private $api_key;
 
     /**
+     * @var mixed The logger instance
+     */
+    private $logger;
+
+    /**
      * @var array The data sent with the last request served by this API
      */
     private $last_request = [];
@@ -55,7 +61,7 @@ class ConnectresellerApi
      * @param string $method Data transfer method (POST, GET, PUT, DELETE)
      * @return ConnectresellerResponse
      */
-    public function apiRequest(string $route, array $params = [], string $method = 'GET') : ConnectresellerResponse
+    public function apiRequest(string $route, array $params = [], string $method = 'GET'): ConnectresellerResponse
     {
         $url = $this->api_url . '/' . ltrim($route, '/');
 
@@ -115,8 +121,7 @@ class ConnectresellerApi
         // Return request response
         return new ConnectresellerResponse([
             'content' => $data[count($data) - 1],
-            'headers' => array_splice($data, 0, count($data) - 1)]
-        );
+            'headers' => array_splice($data, 0, count($data) - 1)]);
     }
 
     /**
@@ -126,7 +131,7 @@ class ConnectresellerApi
      *  - url The URL of the last request
      *  - params The parameters passed to the URL
      */
-    public function lastRequest() : array
+    public function lastRequest(): array
     {
         return $this->last_request;
     }

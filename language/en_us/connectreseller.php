@@ -9,11 +9,14 @@ $lang['Connectreseller.module_row'] = 'Account';
 $lang['Connectreseller.module_row_plural'] = 'Accounts';
 $lang['Connectreseller.module_group'] = 'Account Group';
 
+$lang['Connectreseller.back_to_manage'] = 'Back';
 
 // Module management
 $lang['Connectreseller.add_module_row'] = 'Add Account';
 $lang['Connectreseller.add_module_group'] = 'Add Account Group';
 $lang['Connectreseller.manage.module_rows_title'] = 'Accounts';
+$lang['Connectreseller.manage.tab_rows'] = 'Servers';
+$lang['Connectreseller.manage.tab_groups'] = 'Server Groups';
 
 $lang['Connectreseller.manage.module_rows_heading.reseller_name'] = 'Reseller Name';
 $lang['Connectreseller.manage.module_rows_heading.api_key'] = 'API Key';

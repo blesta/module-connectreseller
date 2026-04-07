@@ -1,4 +1,5 @@
 <?php
+
 /**
  * ConnectReseller Domain Management
  *
@@ -30,7 +31,7 @@ class ConnectresellerDomain
      * @param array $vars Arguments to pass to the method
      * @return mixed An array containing the response, or null on error
      */
-    public function __call($name, array $vars) : ConnectresellerResponse
+    public function __call($name, array $vars): ConnectresellerResponse
     {
         return $this->api->apiRequest($name, $vars[0] ?? []);
     }
@@ -42,7 +43,7 @@ class ConnectresellerDomain
      *  - websiteName Domain Name that you need to check the availability
      * @return ConnectresellerResponse The response object
      */
-    public function check(array $vars) : ConnectresellerResponse
+    public function check(array $vars): ConnectresellerResponse
     {
         return $this->api->apiRequest('/checkDomain', $vars);
     }
@@ -54,7 +55,7 @@ class ConnectresellerDomain
      *  - id The ID of the domain that you want to cancel the transfer
      * @return ConnectresellerResponse The response object
      */
-    public function cancelTransfer(array $vars) : ConnectresellerResponse
+    public function cancelTransfer(array $vars): ConnectresellerResponse
     {
         return $this->api->apiRequest('/CancelTransfer', $vars);
     }
@@ -66,7 +67,7 @@ class ConnectresellerDomain
      *  - domainName Domain for you want to validate the transfer
      * @return ConnectresellerResponse The response object
      */
-    public function syncTransfer(array $vars) : ConnectresellerResponse
+    public function syncTransfer(array $vars): ConnectresellerResponse
     {
         return $this->api->apiRequest('/syncTransfer', $vars);
     }
@@ -78,7 +79,7 @@ class ConnectresellerDomain
      *  - id The ID of the domain that you want to get
      * @return ConnectresellerResponse The response object
      */
-    public function getById(array $vars) : ConnectresellerResponse
+    public function getById(array $vars): ConnectresellerResponse
     {
         return $this->api->apiRequest('/ViewDomainById', $vars);
     }
@@ -90,7 +91,7 @@ class ConnectresellerDomain
      *  - websiteName name of the Domain whose details need to be fetched
      * @return ConnectresellerResponse The response object
      */
-    public function get(array $vars) : ConnectresellerResponse
+    public function get(array $vars): ConnectresellerResponse
     {
         return $this->api->apiRequest('/ViewDomain', $vars);
     }
@@ -105,7 +106,7 @@ class ConnectresellerDomain
      *  - searchQuery Search query to filter by (optional)
      * @return ConnectresellerResponse The response object
      */
-    public function search(array $vars) : ConnectresellerResponse
+    public function search(array $vars): ConnectresellerResponse
     {
         if (!isset($vars['page'])) {
             $vars['page'] = 1;
@@ -130,7 +131,7 @@ class ConnectresellerDomain
      *  - nameServer4 New Name Servers 4 of the domain name
      * @return ConnectresellerResponse The response object
      */
-    public function updateNameServers(array $vars) : ConnectresellerResponse
+    public function updateNameServers(array $vars): ConnectresellerResponse
     {
         return $this->api->apiRequest('/UpdateNameServer', $vars);
     }
@@ -144,7 +145,7 @@ class ConnectresellerDomain
      *  - isDomainLocked Lock Status for domain. (1 or 0)
      * @return ConnectresellerResponse The response object
      */
-    public function manageLock(array $vars) : ConnectresellerResponse
+    public function manageLock(array $vars): ConnectresellerResponse
     {
         return $this->api->apiRequest('/ManageDomainLock', $vars);
     }
@@ -157,7 +158,7 @@ class ConnectresellerDomain
      *  - iswhoisprotected Privacy Status for domain. (1 or 0)
      * @return ConnectresellerResponse The response object
      */
-    public function managePrivacy(array $vars) : ConnectresellerResponse
+    public function managePrivacy(array $vars): ConnectresellerResponse
     {
         return $this->api->apiRequest('/ManageDomainPrivacyProtection', $vars);
     }
@@ -171,7 +172,7 @@ class ConnectresellerDomain
      *  - isDomainSuspend Whether or not the domain is suspended (1 or 0)
      * @return ConnectresellerResponse The response object
      */
-    public function suspend(array $vars) : ConnectresellerResponse
+    public function suspend(array $vars): ConnectresellerResponse
     {
         return $this->api->apiRequest('/ManageDomainSuspend', $vars);
     }
@@ -183,7 +184,7 @@ class ConnectresellerDomain
      *  - domainNameId Domain name Id
      * @return ConnectresellerResponse The response object
      */
-    public function getEpp(array $vars) : ConnectresellerResponse
+    public function getEpp(array $vars): ConnectresellerResponse
     {
         return $this->api->apiRequest('/ViewEPPCode', $vars);
     }

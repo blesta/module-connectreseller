@@ -72,6 +72,14 @@ class Connectreseller extends RegistrarModule
         // Load the helpers required for this view
         Loader::loadHelpers($this, ['Form', 'Html', 'Widget']);
 
+        // Fetch module
+        Loader::loadModels($this, ['ModuleManager']);
+        $module = $this->ModuleManager->getByClass(
+            \Illuminate\Support\Str::snake(get_class($this)),
+            Configure::get('Blesta.company_id')
+        );
+        $module = ($module[0] ?? []);
+        $this->view->set('module', (object) $module);
         $this->view->set('vars', (object) $vars);
 
         return $this->view->fetch();
@@ -99,6 +107,14 @@ class Connectreseller extends RegistrarModule
             $vars = $module_row->meta;
         }
 
+        // Fetch module
+        Loader::loadModels($this, ['ModuleManager']);
+        $module = $this->ModuleManager->getByClass(
+            \Illuminate\Support\Str::snake(get_class($this)),
+            Configure::get('Blesta.company_id')
+        );
+        $module = ($module[0] ?? []);
+        $this->view->set('module', (object) $module);
         $this->view->set('vars', (object) $vars);
 
         return $this->view->fetch();
@@ -283,6 +299,7 @@ class Connectreseller extends RegistrarModule
      */
     public function validateConnection($api_key)
     {
+        $logger = $this->getFromContainer('logger');
         try {
             $api = $this->getApi($api_key);
 
@@ -295,9 +312,12 @@ class Connectreseller extends RegistrarModule
             ]);
             $this->processResponse($api, $response);
 
-            return ($response->status() == 200);
-        } catch (Exception $e) {
-            // Trap any errors encountered, could not validate connection
+            $success = ($response->status() == 200);
+            $logger->info('ConnectReseller connection test ' . ($success ? 'succeeded' : 'failed'));
+
+            return $success;
+        } catch (\Throwable $e) {
+            $logger->error('ConnectReseller connection test failed: ' . $e->getMessage());
         }
 
         return false;
@@ -326,7 +346,7 @@ class Connectreseller extends RegistrarModule
         // Build meta data to return
         $meta = [];
         if ($this->Input->validates($vars)) {
-            if (!isset($vars['meta'] )) {
+            if (!isset($vars['meta'])) {
                 return [];
             }
 
@@ -367,7 +387,7 @@ class Connectreseller extends RegistrarModule
         // Build meta data to return
         $meta = [];
         if ($this->Input->validates($vars)) {
-            if (!isset($vars['meta'] )) {
+            if (!isset($vars['meta'])) {
                 return [];
             }
 
@@ -456,7 +476,7 @@ class Connectreseller extends RegistrarModule
         $fields->setField($tld_options);
 
         // Set nameservers
-        for ($i=1; $i<=4; $i++) {
+        for ($i = 1; $i <= 4; $i++) {
             $type = $fields->label(Language::_('Connectreseller.package_fields.ns', true, $i), 'connectreseller_ns' . $i);
             $type->attach(
                 $fields->fieldText(
@@ -533,11 +553,7 @@ class Connectreseller extends RegistrarModule
             }
 
             // Register or transfer the domain
-            if (!empty($vars['Authcode'])) {
-                $success = $this->transferDomain($vars['Websitename'], $row->id, $vars);
-            } else {
-                $success = $this->registerDomain($vars['Websitename'], $row->id, $vars);
-            }
+            $success = !empty($vars['Authcode']) ? $this->transferDomain($vars['Websitename'], $row->id, $vars) : $this->registerDomain($vars['Websitename'], $row->id, $vars);
 
             if (!$success) {
                 return;
@@ -1785,7 +1801,7 @@ class Connectreseller extends RegistrarModule
                 $module_fields = new ModuleFields();
 
                 // Allow AJAX requests
-                $ajax = $module_fields->fieldHidden('allow_ajax', 'true', ['id'=>'connectreseller_allow_ajax']);
+                $ajax = $module_fields->fieldHidden('allow_ajax', 'true', ['id' => 'connectreseller_allow_ajax']);
                 $module_fields->setField($ajax);
                 $please_select = ['' => Language::_('AppController.select.please', true)];
 
@@ -2136,7 +2152,8 @@ class Connectreseller extends RegistrarModule
             $response = $price_list->response();
 
             // Save pricing in cache
-            if (Configure::get('Caching.on')
+            if (
+                Configure::get('Caching.on')
                 && is_writable(CACHEDIR)
                 && $price_list->status() == 200
             ) {
@@ -2147,7 +2164,7 @@ class Connectreseller extends RegistrarModule
                         strtotime(Configure::get('Blesta.cache_length')) - time(),
                         Configure::get('Blesta.company_id') . DS . 'modules' . DS . 'connectreseller' . DS
                     );
-                } catch (Exception $e) {
+                } catch (\Throwable $e) {
                     // Write to cache failed, so disable caching
                     Configure::set('Caching.on', false);
                 }
@@ -2477,10 +2494,10 @@ class Connectreseller extends RegistrarModule
 
         $ns = [];
         for ($i = 0; $i < 5; $i++) {
-            if (!empty($data->responseData->{'nameserver' . ($i+1)})) {
+            if (!empty($data->responseData->{'nameserver' . ($i + 1)})) {
                 $ns[] = [
-                    'url' => $data->responseData->{'nameserver' . ($i+1)},
-                    'ips' => [gethostbyname($data->responseData->{'nameserver' . ($i+1)})]
+                    'url' => $data->responseData->{'nameserver' . ($i + 1)},
+                    'ips' => [gethostbyname($data->responseData->{'nameserver' . ($i + 1)})]
                 ];
             }
         }
@@ -2607,7 +2624,8 @@ class Connectreseller extends RegistrarModule
 
         // Create new contacts, if they have not been created during provisioning
         foreach ($contacts as $id => $remote_contact) {
-            if (str_replace('OR_', '', $data->responseData->registrantContactId ?? null) == $remote_contact
+            if (
+                str_replace('OR_', '', $data->responseData->registrantContactId ?? null) == $remote_contact
                 && $id !== 'registrantContactId'
             ) {
                 $params = $vars['registrant'] ?? [];
@@ -2847,7 +2865,7 @@ class Connectreseller extends RegistrarModule
                             strtotime(Configure::get('Blesta.cache_length')) - time(),
                             Configure::get('Blesta.company_id') . DS . 'modules' . DS . 'connectreseller' . DS
                         );
-                    } catch (Exception $e) {
+                    } catch (\Throwable $e) {
                         // Write to cache failed, so disable caching
                         Configure::set('Caching.on', false);
                     }

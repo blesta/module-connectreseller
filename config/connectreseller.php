@@ -1,4 +1,5 @@
 <?php
+
 // Welcome Email templates
 Configure::set('Connectreseller.email_templates', [
     'en_us' => [
