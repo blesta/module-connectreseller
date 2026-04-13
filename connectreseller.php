@@ -2128,7 +2128,7 @@ class Connectreseller extends RegistrarModule
         );
 
         if ($cache) {
-            $response = unserialize(base64_decode($cache));
+            $response = safe_unserialize(base64_decode($cache));
         }
 
         // Get remote price list
@@ -2836,7 +2836,7 @@ class Connectreseller extends RegistrarModule
         );
 
         if ($cache) {
-            $data = unserialize(base64_decode($cache));
+            $data = safe_unserialize(base64_decode($cache));
         }
 
         if (!isset($response)) {
