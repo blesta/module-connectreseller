@@ -19,10 +19,10 @@
                         foreach ($dns_records as $record) {
                     ?>
                     <tr>
-                        <td><?php echo ($record->recordType ?? null);?></td>
-                        <td><?php echo ($record->recordName ?? null);?></td>
-                        <td style="max-width: 200px; overflow: hidden;"><?php echo ($record->recordContent ?? null);?></td>
-                        <td><?php echo ($record->recordTTL ?? null);?></td>
+                        <td><?php echo $this->Html->safe($record->recordType ?? null);?></td>
+                        <td><?php echo $this->Html->safe($record->recordName ?? null);?></td>
+                        <td style="max-width: 200px; overflow: hidden;"><?php echo $this->Html->safe($record->recordContent ?? null);?></td>
+                        <td><?php echo $this->Html->safe($record->recordTTL ?? null);?></td>
                         <td>
                             <?php
                             $this->Form->create();
