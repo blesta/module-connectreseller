@@ -2,6 +2,7 @@
 
 use Blesta\Core\Util\Validate\Server;
 use Blesta\Core\Util\Common\Traits\Container;
+use Blesta\Core\Util\Common\Classes\Model;
 
 /**
  * Connectreseller Module
@@ -2128,7 +2129,7 @@ class Connectreseller extends RegistrarModule
         );
 
         if ($cache) {
-            $response = safe_unserialize(base64_decode($cache));
+            $response = Model::safeUnserialize(base64_decode($cache));
         }
 
         // Get remote price list
@@ -2836,7 +2837,7 @@ class Connectreseller extends RegistrarModule
         );
 
         if ($cache) {
-            $data = safe_unserialize(base64_decode($cache));
+            $data = Model::safeUnserialize(base64_decode($cache));
         }
 
         if (!isset($response)) {
