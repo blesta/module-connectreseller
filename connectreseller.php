@@ -2839,7 +2839,7 @@ class Connectreseller extends RegistrarModule
             $data = safe_unserialize(base64_decode($cache));
         }
 
-        if (!isset($response)) {
+        if (empty($data)) {
             try {
                 $row = $this->getModuleRow($module_row_id);
                 $api = $this->getApi($row->meta->api_key);
@@ -2918,17 +2918,7 @@ class Connectreseller extends RegistrarModule
      */
     private function getTld($domain)
     {
-        $tlds = $this->getTlds();
-
-        $domain = strtolower($domain);
-
-        foreach ($tlds as $tld) {
-            if (substr($domain, -strlen($tld)) == $tld) {
-                return $tld;
-            }
-        }
-
-        return strstr($domain, '.');
+        return $this->findTld($domain);
     }
 
     /**
