@@ -2839,7 +2839,7 @@ class Connectreseller extends RegistrarModule
             $data = safe_unserialize(base64_decode($cache));
         }
 
-        if (!isset($response)) {
+        if (empty($data)) {
             try {
                 $row = $this->getModuleRow($module_row_id);
                 $api = $this->getApi($row->meta->api_key);
